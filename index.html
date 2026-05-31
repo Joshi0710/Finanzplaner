@@ -385,7 +385,7 @@ function updateRow(prefix, i, col, val) {
 function moveRight(prefix, i) {
   const rows = getRows(prefix);
   if (rows[i].geplant !== '') { rows[i].bezahlt = rows[i].geplant; rows[i].geplant = ''; }
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'comm'); calcComm(); }
+  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
 }
@@ -393,7 +393,7 @@ function moveRight(prefix, i) {
 function moveLeft(prefix, i) {
   const rows = getRows(prefix);
   if (rows[i].bezahlt !== '') { rows[i].geplant = rows[i].bezahlt; rows[i].bezahlt = ''; }
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'comm'); calcComm(); }
+  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
 }
@@ -402,7 +402,7 @@ function moveLeft(prefix, i) {
 function addRow(prefix) {
   const rows = getRows(prefix);
   rows.push({ betreff: '', geplant: '', bezahlt: '', datum: '' });
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'comm'); calcComm(); }
+  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
   // Focus new row
@@ -413,7 +413,7 @@ function addRow(prefix) {
 function deleteRow(prefix, i) {
   const rows = getRows(prefix);
   rows.splice(i, 1);
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'comm'); calcComm(); }
+  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
 }
@@ -437,8 +437,9 @@ function calcPriv() {
   el.className = 'solde-fin-value ' + (fin >= 0 ? 'pos' : 'neg');
 }
 
+// Show defaults immediately, then load from Supabase
 load();
-renderRows(rowsComm, 'tbody-commun', 'comm');
+renderRows(rowsComm, 'tbody-commun', 'commun');
 renderRows(rowsPriv, 'tbody-priv', 'priv');
 calcComm();
 calcPriv();
@@ -533,6 +534,9 @@ function renderVir() {
 
 loadVir();
 renderVir();
+
+// Load from Supabase (overrides defaults)
+loadAllFromSupabase();
 
 </script>
 </body>
