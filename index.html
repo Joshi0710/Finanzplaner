@@ -302,9 +302,9 @@
   </div>
   <div class="auth-box">
     <div class="auth-title">Anmelden</div>
-    <div class="auth-sub">Magic Link — du bekommst einen Login-Link per E-Mail</div>
-    <input type="email" id="auth-email" placeholder="deine@email.com">
-    <button class="btn-primary" onclick="sendMagicLink()">Magic Link senden</button>
+    <div class="auth-sub">E-Mail und Passwort eingeben</div>
+    <input type="email" id="auth-email" placeholder="E-Mail" onkeydown="if(event.key==='Enter')login()"><input type="password" id="auth-password" placeholder="Passwort" style="margin-top:0" onkeydown="if(event.key==='Enter')login()">
+    <button class="btn-primary" onclick="login()">Anmelden</button>
     <div class="auth-msg" id="auth-msg"></div>
   </div>
 </div>
@@ -440,14 +440,14 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('de-LU', { month: 'sho
 const today = new Date();
 
 // ---- AUTH ----
-async function sendMagicLink() {
+async function login() {
   const email = document.getElementById('auth-email').value.trim();
   if (!email) return;
   const msg = document.getElementById('auth-msg');
   msg.textContent = 'Sende...';
-  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: window.location.href } });
+  const password = document.getElementById('auth-password').value; if (!password) return; const { error } = await sb.auth.signInWithPassword({ email, password });
   if (error) { msg.textContent = 'Fehler: ' + error.message; }
-  else { msg.textContent = '✓ Magic Link gesendet! Prüfe deine E-Mails.'; }
+  
 }
 
 async function logout() {
