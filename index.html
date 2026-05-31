@@ -70,12 +70,19 @@
 
 <div class="header">
   <div class="logo">◆ BCEE — Calcul Mensuel</div>
+  <nav style="display:flex; gap:0.25rem; margin-right:1rem;">
+    <button onclick="showPage('calcul')" id="nav-calcul" style="background:rgba(200,240,96,0.1); border:1px solid rgba(200,240,96,0.3); color:#c8f060; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Calcul</button>
+    <button onclick="showPage('prets')" id="nav-prets" style="background:none; border:1px solid #2a2a32; color:#6b6b7a; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Prêts</button>
+    <button onclick="showPage('divers')" id="nav-divers" style="background:none; border:1px solid #2a2a32; color:#6b6b7a; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Divers</button>
+    <button onclick="showPage('historique')" id="nav-historique" style="background:none; border:1px solid #2a2a32; color:#6b6b7a; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Historique</button>
+  </nav>
   <div style="display:flex; align-items:center; gap:1rem;">
     <div style="font-size:0.7rem; color:#3a3a44;" id="save-hint">Alle Änderungen automatisch gespeichert</div>
     <button id="save-btn" onclick="manualSave()" style="background:rgba(200,240,96,0.1); border:1px solid rgba(200,240,96,0.3); color:#c8f060; font-family:'Segoe UI',sans-serif; font-size:0.75rem; padding:0.35rem 1rem; border-radius:3px; cursor:pointer; transition:all 0.15s;">💾 Speichern</button>
   </div>
 </div>
 
+<div id="page-calcul">
 <div class="main">
 
   <!-- ===== BCEE COMMUN ===== -->
@@ -196,6 +203,46 @@
   </div>
 
 </div>
+</div>
+<!-- ========== PAGE: PRÊTS ========== -->
+<div id="page-prets" style="display:none;">
+<div style="max-width:1100px; margin:0 auto; padding:1.5rem 2rem;">
+
+  <div style="margin-bottom:1.5rem;">
+    <div style="font-size:0.7rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.5rem;">Monatliche Fixkosten — Prêts & Charges</div>
+  </div>
+
+  <!-- KREDIT KARTEN -->
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem;" id="prets-cards"></div>
+
+  <!-- TABELLE -->
+  <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; overflow:hidden; margin-bottom:1.5rem;">
+    <table style="width:100%; border-collapse:collapse;">
+      <thead style="background:#1e1e23;">
+        <tr>
+          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:22%;">Bezeichnung</th>
+          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Rate/Mo</th>
+          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:18%;">Betreff Überweisung</th>
+          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Start</th>
+          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Ende</th>
+          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Restschuld</th>
+          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:16%;">Fortschritt</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-prets"></tbody>
+      <tfoot>
+        <tr style="background:#1e1e23; border-top:2px solid #2a2a32;">
+          <td style="padding:0.7rem 0.75rem; font-size:0.7rem; color:#6b6b7a; text-transform:uppercase;">Total / Monat</td>
+          <td style="padding:0.7rem 0.75rem; text-align:right; font-size:1rem; font-weight:700; color:#f06060;" id="prets-total">–</td>
+          <td colspan="5"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+
+</div>
+</div>
+
 
 <script>
 // ===== SUPABASE =====
@@ -237,6 +284,9 @@ async function manualSave() {
     saveToSupabase('bcee_commun_solde', document.getElementById('solde-comm').value),
     saveToSupabase('bcee_priv_solde', document.getElementById('solde-priv').value),
     saveToSupabase('bcee_vir_rows', rowsVir),
+    saveToSupabase('bcee_prets_rows', rowsPrets),
+    saveToSupabase('bcee_histo', histoPaid),
+    saveToSupabase('bcee_divers_rows', rowsDivers),
   ]);
   isDirty = false;
   if (btn) { btn.style.background = 'rgba(200,240,96,0.1)'; btn.style.borderColor = 'rgba(200,240,96,0.3)'; btn.style.color = '#c8f060'; btn.textContent = '✓ Gespeichert'; }
@@ -258,12 +308,13 @@ async function loadAllFromSupabase() {
   const hint = document.getElementById('save-hint');
   if (hint) hint.textContent = 'Lade Daten...';
   
-  const [commRows, privRows, commSolde, privSolde, virRows] = await Promise.all([
+  const [commRows, privRows, commSolde, privSolde, virRows, pretsRows, histoData, diversData] = await Promise.all([
     loadFromSupabase('bcee_commun_rows'),
     loadFromSupabase('bcee_priv_rows'),
     loadFromSupabase('bcee_commun_solde'),
     loadFromSupabase('bcee_priv_solde'),
     loadFromSupabase('bcee_vir_rows'),
+    loadFromSupabase('bcee_prets_rows'),
   ]);
 
   if (commRows) rowsComm = commRows;
@@ -271,6 +322,9 @@ async function loadAllFromSupabase() {
   if (commSolde) document.getElementById('solde-comm').value = commSolde;
   if (privSolde) document.getElementById('solde-priv').value = privSolde;
   if (virRows) rowsVir = virRows;
+  if (pretsRows) { rowsPrets = pretsRows; renderPrets(); }
+  if (histoData) { histoPaid = histoData; renderHistorique(); }
+  if (diversData) { rowsDivers = diversData; renderDivers(); }
 
   renderRows(rowsComm, 'tbody-commun', 'commun');
   renderRows(rowsPriv, 'tbody-priv', 'priv');
@@ -538,6 +592,407 @@ renderVir();
 // Load from Supabase (overrides defaults)
 loadAllFromSupabase();
 
+// Init historique after DOM is fully loaded
+window.addEventListener('DOMContentLoaded', () => {
+  loadHisto();
+  renderHistorique();
+});
+
+
+function showPage(page) {
+  document.getElementById('page-calcul').style.display = page === 'calcul' ? 'block' : 'none';
+  document.getElementById('page-prets').style.display = page === 'prets' ? 'block' : 'none';
+  document.getElementById('nav-calcul').style.background = page === 'calcul' ? 'rgba(200,240,96,0.1)' : 'none';
+  document.getElementById('nav-calcul').style.color = page === 'calcul' ? '#c8f060' : '#6b6b7a';
+  document.getElementById('nav-calcul').style.borderColor = page === 'calcul' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
+  document.getElementById('nav-prets').style.background = page === 'prets' ? 'rgba(200,240,96,0.1)' : 'none';
+  document.getElementById('nav-prets').style.color = page === 'prets' ? '#c8f060' : '#6b6b7a';
+  document.getElementById('nav-prets').style.borderColor = page === 'prets' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
+  const hEl = document.getElementById('page-historique');
+  if (hEl) hEl.style.display = page === 'historique' ? 'block' : 'none';
+  const navH = document.getElementById('nav-historique');
+  if (navH) {
+    navH.style.background = page === 'historique' ? 'rgba(200,240,96,0.1)' : 'none';
+    navH.style.color = page === 'historique' ? '#c8f060' : '#6b6b7a';
+    navH.style.borderColor = page === 'historique' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
+  }
+  const dEl = document.getElementById('page-divers');
+  if (dEl) dEl.style.display = page === 'divers' ? 'block' : 'none';
+  const navD = document.getElementById('nav-divers');
+  if (navD) {
+    navD.style.background = page === 'divers' ? 'rgba(200,240,96,0.1)' : 'none';
+    navD.style.color = page === 'divers' ? '#c8f060' : '#6b6b7a';
+    navD.style.borderColor = page === 'divers' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
+  }
+}
+
+// ========== PRÊTS PAGE ==========
+const DEFAULT_PRETS = [
+  { name: 'Tesla',          rate: 857.93,  ref: 'Tesla',          start: '2026-03-01', end: '2031-02-01', total: 51475.80 },
+  { name: 'Photovoltaique', rate: 399.62,  ref: 'Record Credit',  start: '2023-10-01', end: '2033-09-01', total: 47954.40 },
+  { name: 'Duster',         rate: 494.56,  ref: 'Duster',         start: '2022-06-01', end: '2033-03-01', total: 41543.04 },
+  { name: 'Panamera',       rate: 896.55,  ref: 'Panamera',       start: '2025-02-01', end: '2035-01-01', total: 107586.00 },
+  { name: 'Logement',       rate: 1910.00, ref: 'ING Maison',     start: '2020-08-01', end: '2041-08-01', total: 482070.00 },
+];
+let rowsPrets = [];
+
+const DEFAULT_DIVERS = [
+  { name: 'BuyWay',             rate: 140.00,  ref: 'BuyWay',         start: '2026-02-01', end: '2026-11-01', total: 1500.00 },
+  { name: 'Avance Impôts',      rate: 1550.00, ref: 'Avance Impôts',  start: '2025-06-01', end: '2027-12-01', total: 0 },
+  { name: 'Salaire Tina',       rate: 616.19,  ref: 'Salaire Tina',   start: '2020-01-01', end: '2030-12-01', total: 0 },
+  { name: 'CCSS',               rate: 246.24,  ref: 'CCSS',           start: '2023-01-01', end: '2028-12-01', total: 0 },
+  { name: 'Bail L93 Merkholtz', rate: 250.00,  ref: 'Bail L93',       start: '2021-01-01', end: '2027-04-01', total: 0 },
+];
+let rowsDivers = [];
+
+function loadPrets() {
+  try {
+    const s = sessionStorage.getItem('bcee_prets');
+    rowsPrets = s ? JSON.parse(s) : DEFAULT_PRETS.map(r=>({...r}));
+  } catch(e) { rowsPrets = DEFAULT_PRETS.map(r=>({...r})); }
+}
+
+function savePrets() {
+  try { sessionStorage.setItem('bcee_prets', JSON.stringify(rowsPrets)); } catch(e) {}
+  scheduleSave();
+}
+
+// Alles bezahlt bis Mai 2026 — nächste offene Rate: Juni 2026
+const REFERENCE_DATE = new Date(2026, 5, 1); // Juni 2026
+
+function getMonthsLeft(endDate) {
+  if (!endDate) return 0;
+  const end = new Date(endDate);
+  const ref = REFERENCE_DATE;
+  return Math.max(0, (end.getFullYear() - ref.getFullYear())*12 + (end.getMonth() - ref.getMonth()));
+}
+
+function getPct(startDate, endDate) {
+  if (!startDate || !endDate) return 0;
+  const start = new Date(startDate).getTime();
+  const end = new Date(endDate).getTime();
+  const ref = REFERENCE_DATE.getTime();
+  return Math.min(100, Math.max(0, Math.round((ref - start) / (end - start) * 100)));
+}
+
+function fmtDate(d) {
+  if (!d) return '–';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('de-LU', { month: 'short', year: '2-digit' });
+}
+
+function renderPrets() {
+  const tbody = document.getElementById('tbody-prets');
+  if (!tbody) return;
+  let total = 0;
+  tbody.innerHTML = rowsPrets.map((r,i) => {
+    total += parseFloat(r.rate) || 0;
+    const monthsLeft = getMonthsLeft(r.end);
+    const restschuld = r.total > 0 ? Math.round(monthsLeft * r.rate) : 0;
+    const pct = getPct(r.start, r.end);
+    const pctColor = pct > 80 ? '#60f0a0' : pct > 50 ? '#60c8f0' : '#c8f060';
+    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.5);">
+      <td style="padding:0.5rem 0.75rem;">
+        <input class="betreff-input" type="text" value="${r.name}" onchange="rowsPrets[${i}].name=this.value; renderPrets(); savePrets();" style="font-weight:600;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:right;">
+        <input class="amt-input" type="number" step="0.01" value="${r.rate}" onchange="rowsPrets[${i}].rate=parseFloat(this.value)||0; renderPrets(); savePrets();">
+      </td>
+      <td style="padding:0.5rem 0.75rem;">
+        <input class="betreff-input" type="text" value="${r.ref}" onchange="rowsPrets[${i}].ref=this.value; savePrets();" style="color:#6b6b7a; font-size:0.78rem;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:center;">
+        <input type="month" value="${r.start ? r.start.substring(0,7) : ''}" onchange="rowsPrets[${i}].start=this.value+'-01'; renderPrets(); savePrets();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:center;">
+        <input type="month" value="${r.end ? r.end.substring(0,7) : ''}" onchange="rowsPrets[${i}].end=this.value+'-01'; renderPrets(); savePrets();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:right; font-size:0.82rem; color:#60c8f0;">
+        ${restschuld > 0 ? new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(restschuld)+' €' : '–'}
+      </td>
+      <td style="padding:0.5rem 0.75rem;">
+        <div style="background:#2a2a32; border-radius:2px; height:5px; overflow:hidden;">
+          <div style="height:100%; width:${pct}%; background:${pctColor}; border-radius:2px; transition:width 0.3s;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#6b6b7a; margin-top:0.2rem;">
+          <span>${pct}%</span><span>${monthsLeft} Mo.</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('prets-total').textContent = new Intl.NumberFormat('de-LU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(total) + ' €';
+  renderPretsCards();
+}
+
+function renderPretsCards() {
+  const el = document.getElementById('prets-cards');
+  if (!el) return;
+  const total = rowsPrets.reduce((s,r) => s + (parseFloat(r.rate)||0), 0);
+  const totalSchuld = rowsPrets.filter(r=>r.total>0).reduce((s,r) => s + Math.round(getMonthsLeft(r.end)*r.rate), 0);
+  const longest = rowsPrets.reduce((a,b) => getMonthsLeft(b.end) > getMonthsLeft(a.end) ? b : a, rowsPrets[0]);
+  el.innerHTML = `
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Total / Monat</div>
+      <div style="font-size:1.5rem; font-weight:700; color:#f06060;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(total)} €</div>
+      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.2rem;">${rowsPrets.length} Positionen</div>
+    </div>
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Gesamte Restschuld</div>
+      <div style="font-size:1.5rem; font-weight:700; color:#60c8f0;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(totalSchuld)} €</div>
+      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.2rem;">Kredite mit Betrag</div>
+    </div>
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Längste Laufzeit</div>
+      <div style="font-size:1.5rem; font-weight:700; color:#c8f060;">${longest ? fmtDate(longest.end) : '–'}</div>
+      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.2rem;">${longest ? longest.name : ''}</div>
+    </div>`;
+}
+
+loadPrets();
+renderPrets();
+
+
+// ========== HISTORIQUE ==========
+const HISTO_CREDITS = [{'name': 'Tesla', 'start': '2026-03', 'end': '2031-02', 'rate': 857.93}, {'name': 'Photovoltaique', 'start': '2023-10', 'end': '2033-09', 'rate': 399.62}, {'name': 'BuyWay', 'start': '2026-02', 'end': '2026-11', 'rate': 140.0}, {'name': 'Duster', 'start': '2022-06', 'end': '2033-03', 'rate': 494.56}, {'name': 'Panamera', 'start': '2025-02', 'end': '2035-01', 'rate': 896.55}, {'name': 'Logement', 'start': '2020-08', 'end': '2041-08', 'rate': 1910.0}, {'name': 'Avance Impôts', 'start': '2025-06', 'end': '2027-12', 'rate': 1550.0}, {'name': 'Salaire Tina', 'start': '2020-01', 'end': '2030-12', 'rate': 616.19}, {'name': 'CCSS', 'start': '2023-01', 'end': '2028-12', 'rate': 246.24}, {'name': 'Bail L93', 'start': '2021-01', 'end': '2027-04', 'rate': 250.0}];
+let histoPaid = {}; // key: "creditName_YYYY-MM" -> true/false
+
+function loadHisto() {
+  try {
+    const s = sessionStorage.getItem('bcee_histo');
+    histoPaid = s ? JSON.parse(s) : {};
+  } catch(e) { histoPaid = {}; }
+}
+
+function saveHisto() {
+  try { sessionStorage.setItem('bcee_histo', JSON.stringify(histoPaid)); } catch(e) {}
+  scheduleSave();
+}
+
+function getHistoMonths() {
+  // Show from Jan 2025 to Dec 2027
+  const months = [];
+  for (let y = 2025; y <= 2027; y++) {
+    for (let m = 1; m <= 12; m++) {
+      months.push(`${y}-${String(m).padStart(2,'0')}`);
+    }
+  }
+  return months;
+}
+
+function isActive(credit, ym) {
+  return ym >= credit.start && ym <= credit.end;
+}
+
+function togglePaid(creditName, ym) {
+  const key = creditName + '_' + ym;
+  histoPaid[key] = !histoPaid[key];
+  saveHisto();
+  renderHistorique();
+}
+
+function renderHistorique() {
+  const months = getHistoMonths();
+  const tbody = document.getElementById('tbody-historique');
+  const headerRow = document.getElementById('histo-month-headers');
+  if (!tbody || !headerRow) return;
+
+  // Month headers
+  headerRow.innerHTML = '<th style="position:sticky; left:0; background:#1a1a1f; min-width:130px;"></th>' +
+    months.map(ym => {
+      const [y,m] = ym.split('-');
+      const isPast = ym < '2026-06';
+      const isCurrent = ym === '2026-05';
+      const label = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('de-LU', {month:'short'});
+      return `<th style="padding:0.3rem 0.2rem; text-align:center; font-size:0.6rem; color:${isCurrent ? '#c8f060' : isPast ? '#6b6b7a' : '#3a3a44'}; font-weight:${isCurrent ? '700' : '400'}; min-width:38px; border-bottom:1px solid #2a2a32; border-left:1px solid rgba(42,42,50,0.3);">
+        <div>${label}</div><div style="color:#3a3a44; font-size:0.55rem;">${y.slice(2)}</div>
+      </th>`;
+    }).join('');
+
+  let totalPaid = 0, countPaid = 0, countOpen = 0;
+
+  tbody.innerHTML = HISTO_CREDITS.map(cr => {
+    const cells = months.map(ym => {
+      if (!isActive(cr, ym)) return `<td style="background:#0f0f11; border-left:1px solid rgba(42,42,50,0.2);"></td>`;
+      const key = cr.name + '_' + ym;
+      const paid = histoPaid[key] || false;
+      const isPastDue = ym < '2026-06'; // before June 2026
+      
+      if (paid) { totalPaid += cr.rate; countPaid++; }
+      else if (isPastDue) { countOpen++; }
+
+      const bg = paid ? 'rgba(96,240,160,0.15)' : isPastDue ? 'rgba(240,96,96,0.08)' : 'rgba(42,42,50,0.2)';
+      const color = paid ? '#60f0a0' : isPastDue ? '#f06060' : '#3a3a44';
+      const symbol = paid ? '✓' : isPastDue ? '!' : '·';
+
+      return `<td style="text-align:center; padding:0.2rem; border-left:1px solid rgba(42,42,50,0.2); background:${bg}; cursor:pointer;" 
+        onclick="togglePaid('${cr.name}','${ym}'); "
+        title="${cr.name} ${ym}: ${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(cr.rate)} €">
+        <span style="font-size:0.75rem; color:${color}; font-weight:${paid ? '700' : '400'};">${symbol}</span>
+      </td>`;
+    }).join('');
+
+    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.4);">
+      <td style="padding:0.4rem 0.75rem; font-size:0.8rem; font-weight:600; position:sticky; left:0; background:#17171a; z-index:1; border-right:1px solid #2a2a32;">
+        ${cr.name}
+        <div style="font-size:0.65rem; color:#6b6b7a; font-weight:400;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(cr.rate)} €/Mo</div>
+      </td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  document.getElementById('histo-paid-count').textContent = countPaid + ' Raten';
+  document.getElementById('histo-open-count').textContent = countOpen + ' offen';
+  document.getElementById('histo-paid-sum').textContent = new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(totalPaid) + ' €';
+}
+
+// Historique renders after DOM ready (called in window.onload)
+
+
+// ========== DIVERS PAGE ==========
+function loadDivers() {
+  try {
+    const s = sessionStorage.getItem('bcee_divers');
+    rowsDivers = s ? JSON.parse(s) : DEFAULT_DIVERS.map(r=>({...r}));
+  } catch(e) { rowsDivers = DEFAULT_DIVERS.map(r=>({...r})); }
+}
+
+function saveDivers() {
+  try { sessionStorage.setItem('bcee_divers', JSON.stringify(rowsDivers)); } catch(e) {}
+  scheduleSave();
+}
+
+function renderDivers() {
+  const tbody = document.getElementById('tbody-divers');
+  if (!tbody) return;
+  let total = 0;
+  tbody.innerHTML = rowsDivers.map((r,i) => {
+    total += parseFloat(r.rate) || 0;
+    const monthsLeft = getMonthsLeft(r.end);
+    const restschuld = r.total > 0 ? Math.round(monthsLeft * r.rate) : 0;
+    const pct = getPct(r.start, r.end);
+    const pctColor = pct > 80 ? '#60f0a0' : pct > 50 ? '#60c8f0' : '#c8f060';
+    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.5);">
+      <td style="padding:0.5rem 0.75rem;">
+        <input class="betreff-input" type="text" value="${r.name}" onchange="rowsDivers[${i}].name=this.value; renderDivers(); saveDivers();" style="font-weight:600;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:right;">
+        <input class="amt-input" type="number" step="0.01" value="${r.rate}" onchange="rowsDivers[${i}].rate=parseFloat(this.value)||0; renderDivers(); saveDivers();">
+      </td>
+      <td style="padding:0.5rem 0.75rem;">
+        <input class="betreff-input" type="text" value="${r.ref}" onchange="rowsDivers[${i}].ref=this.value; saveDivers();" style="color:#6b6b7a; font-size:0.78rem;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:center;">
+        <input type="month" value="${r.start ? r.start.substring(0,7) : ''}" onchange="rowsDivers[${i}].start=this.value+'-01'; renderDivers(); saveDivers();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:center;">
+        <input type="month" value="${r.end ? r.end.substring(0,7) : ''}" onchange="rowsDivers[${i}].end=this.value+'-01'; renderDivers(); saveDivers();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
+      </td>
+      <td style="padding:0.5rem 0.75rem; text-align:right; font-size:0.82rem; color:#60c8f0;">
+        ${restschuld > 0 ? new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(restschuld)+' €' : '–'}
+      </td>
+      <td style="padding:0.5rem 0.75rem;">
+        <div style="background:#2a2a32; border-radius:2px; height:5px; overflow:hidden;">
+          <div style="height:100%; width:${pct}%; background:${pctColor}; border-radius:2px;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#6b6b7a; margin-top:0.2rem;">
+          <span>${pct}%</span><span>${monthsLeft} Mo.</span>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('divers-total').textContent = new Intl.NumberFormat('de-LU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(total) + ' €';
+
+  const el = document.getElementById('divers-cards');
+  if (!el) return;
+  const totalSchuld = rowsDivers.filter(r=>r.total>0).reduce((s,r) => s + Math.round(getMonthsLeft(r.end)*r.rate), 0);
+  const longest = rowsDivers.reduce((a,b) => getMonthsLeft(b.end) > getMonthsLeft(a.end) ? b : a, rowsDivers[0]);
+  el.innerHTML = `
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Total / Monat</div>
+      <div style="font-size:1.5rem; font-weight:700; color:#f06060;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(total)} €</div>
+    </div>
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Restschuld</div>
+      <div style="font-size:1.5rem; font-weight:700; color:#60c8f0;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(totalSchuld)} €</div>
+    </div>
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Längste Laufzeit</div>
+      <div style="font-size:1.5rem; font-weight:700; color:#c8f060;">${longest ? fmtDate(longest.end) : '–'}</div>
+      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.15rem;">${longest ? longest.name : ''}</div>
+    </div>`;
+}
+
+loadDivers();
+renderDivers();
+
 </script>
+
+<!-- ========== PAGE: HISTORIQUE ========== -->
+<div id="page-historique" style="display:none;">
+<div style="max-width:1300px; margin:0 auto; padding:1.5rem 2rem;">
+  <div style="font-size:0.7rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1.5rem;">Historique des paiements — cliquez pour marquer comme payé</div>
+  
+  <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:0.75rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em;">Bezahlt</div>
+      <div style="font-size:1.2rem; font-weight:700; color:#60f0a0;" id="histo-paid-count">–</div>
+    </div>
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:0.75rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em;">Offen</div>
+      <div style="font-size:1.2rem; font-weight:700; color:#f06060;" id="histo-open-count">–</div>
+    </div>
+    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:0.75rem 1.25rem;">
+      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em;">Bezahlt (€)</div>
+      <div style="font-size:1.2rem; font-weight:700; color:#60c8f0;" id="histo-paid-sum">–</div>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; min-width:900px;">
+      <thead>
+        <tr style="background:#1e1e23;">
+          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; position:sticky; left:0; background:#1e1e23; min-width:130px;">Kredit / Monat</th>
+          <th id="histo-header-row" colspan="100" style="border-bottom:1px solid #2a2a32;"></th>
+        </tr>
+        <tr id="histo-month-headers" style="background:#1a1a1f;"></tr>
+      </thead>
+      <tbody id="tbody-historique"></tbody>
+    </table>
+  </div>
+</div>
+</div>
+
+
+<!-- ========== PAGE: DIVERS ========== -->
+<div id="page-divers" style="display:none;">
+<div style="max-width:1100px; margin:0 auto; padding:1.5rem 2rem;">
+  <div style="font-size:0.7rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1.5rem;">Divers — Charges mensuelles</div>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem;" id="divers-cards"></div>
+  <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; overflow:hidden; margin-bottom:1.5rem;">
+    <table style="width:100%; border-collapse:collapse;">
+      <thead style="background:#1e1e23;">
+        <tr>
+          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:22%;">Bezeichnung</th>
+          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Rate/Mo</th>
+          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:18%;">Betreff Überweisung</th>
+          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Start</th>
+          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Ende</th>
+          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Restschuld</th>
+          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:16%;">Fortschritt</th>
+        </tr>
+      </thead>
+      <tbody id="tbody-divers"></tbody>
+      <tfoot>
+        <tr style="background:#1e1e23; border-top:2px solid #2a2a32;">
+          <td style="padding:0.7rem 0.75rem; font-size:0.7rem; color:#6b6b7a; text-transform:uppercase;">Total / Monat</td>
+          <td style="padding:0.7rem 0.75rem; text-align:right; font-size:1rem; font-weight:700; color:#f06060;" id="divers-total">–</td>
+          <td colspan="5"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+</div>
+
 </body>
 </html>
