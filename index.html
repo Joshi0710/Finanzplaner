@@ -373,19 +373,19 @@ function renderRows(rows, tbodyId, prefix) {
   tbody.appendChild(addTr);
 }
 
-function getRows(prefix) { return prefix === 'comm' ? rowsComm : rowsPriv; }
+function getRows(prefix) { return prefix === 'commun' ? rowsComm : rowsPriv; }
 
 function updateRow(prefix, i, col, val) {
   const rows = getRows(prefix);
   rows[i][col] = (col === 'geplant' || col === 'bezahlt') ? (val === '' ? '' : parseFloat(val)) : val;
-  if (prefix === 'comm') calcComm(); else calcPriv();
+  if (prefix === 'commun') calcComm(); else calcPriv();
   scheduleSave();
 }
 
 function moveRight(prefix, i) {
   const rows = getRows(prefix);
   if (rows[i].geplant !== '') { rows[i].bezahlt = rows[i].geplant; rows[i].geplant = ''; }
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
+  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
 }
@@ -393,7 +393,7 @@ function moveRight(prefix, i) {
 function moveLeft(prefix, i) {
   const rows = getRows(prefix);
   if (rows[i].bezahlt !== '') { rows[i].geplant = rows[i].bezahlt; rows[i].bezahlt = ''; }
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
+  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
 }
@@ -402,7 +402,7 @@ function moveLeft(prefix, i) {
 function addRow(prefix) {
   const rows = getRows(prefix);
   rows.push({ betreff: '', geplant: '', bezahlt: '', datum: '' });
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
+  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
   // Focus new row
@@ -413,7 +413,7 @@ function addRow(prefix) {
 function deleteRow(prefix, i) {
   const rows = getRows(prefix);
   rows.splice(i, 1);
-  if (prefix === 'comm') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
+  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
   else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
   scheduleSave();
 }
