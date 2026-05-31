@@ -70,7 +70,10 @@
 
 <div class="header">
   <div class="logo">◆ BCEE — Calcul Mensuel</div>
-  <div style="font-size:0.7rem; color:#3a3a44;" id="save-hint">Alle Änderungen automatisch gespeichert</div>
+  <div style="display:flex; align-items:center; gap:1rem;">
+    <div style="font-size:0.7rem; color:#3a3a44;" id="save-hint">Alle Änderungen automatisch gespeichert</div>
+    <button id="save-btn" onclick="manualSave()" style="background:rgba(200,240,96,0.1); border:1px solid rgba(200,240,96,0.3); color:#c8f060; font-family:'Segoe UI',sans-serif; font-size:0.75rem; padding:0.35rem 1rem; border-radius:3px; cursor:pointer; transition:all 0.15s;">💾 Speichern</button>
+  </div>
 </div>
 
 <div class="main">
@@ -201,7 +204,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const { createClient } = supabase;
 const sb = createClient(SUPA_URL, SUPA_KEY);
 
-let saveTimer = null;
+let isDirty = false;
 
 async function saveToSupabase(key, value) {
   try {
@@ -216,22 +219,40 @@ async function loadFromSupabase(key) {
   } catch(e) { return null; }
 }
 
-function scheduleSave() {
-  // Debounce: save 1s after last change
-  clearTimeout(saveTimer);
-  saveTimer = setTimeout(async () => {
-    const hint = document.getElementById('save-hint');
-    if (hint) { hint.textContent = 'Speichere...'; hint.classList.add('saved-flash'); }
-    await Promise.all([
-      saveToSupabase('bcee_commun_rows', rowsComm),
-      saveToSupabase('bcee_priv_rows', rowsPriv),
-      saveToSupabase('bcee_commun_solde', document.getElementById('solde-comm').value),
-      saveToSupabase('bcee_priv_solde', document.getElementById('solde-priv').value),
-      saveToSupabase('bcee_vir_rows', rowsVir),
-    ]);
-    if (hint) { hint.textContent = '✓ Gespeichert'; setTimeout(()=>{ hint.textContent='Alle Änderungen automatisch gespeichert'; hint.classList.remove('saved-flash'); }, 1500); }
-  }, 1000);
+function markDirty() {
+  isDirty = true;
+  const btn = document.getElementById('save-btn');
+  const hint = document.getElementById('save-hint');
+  if (btn) { btn.style.background = 'rgba(240,96,96,0.15)'; btn.style.borderColor = 'rgba(240,96,96,0.5)'; btn.style.color = '#f06060'; btn.textContent = '💾 Nicht gespeichert'; }
+  if (hint) { hint.textContent = 'Ungespeicherte Änderungen'; hint.style.color = '#f06060'; }
 }
+
+async function manualSave() {
+  const btn = document.getElementById('save-btn');
+  const hint = document.getElementById('save-hint');
+  if (btn) { btn.textContent = '⏳ Speichere...'; btn.style.color = '#6b6b7a'; }
+  await Promise.all([
+    saveToSupabase('bcee_commun_rows', rowsComm),
+    saveToSupabase('bcee_priv_rows', rowsPriv),
+    saveToSupabase('bcee_commun_solde', document.getElementById('solde-comm').value),
+    saveToSupabase('bcee_priv_solde', document.getElementById('solde-priv').value),
+    saveToSupabase('bcee_vir_rows', rowsVir),
+  ]);
+  isDirty = false;
+  if (btn) { btn.style.background = 'rgba(200,240,96,0.1)'; btn.style.borderColor = 'rgba(200,240,96,0.3)'; btn.style.color = '#c8f060'; btn.textContent = '✓ Gespeichert'; }
+  if (hint) { hint.textContent = 'Gespeichert'; hint.style.color = '#60f0a0'; }
+  setTimeout(() => {
+    if (btn) btn.textContent = '💾 Speichern';
+    if (hint) { hint.textContent = 'Alle Änderungen manuell speichern'; hint.style.color = '#3a3a44'; }
+  }, 2000);
+}
+
+function scheduleSave() { markDirty(); }
+
+// Warn before closing if unsaved
+window.addEventListener('beforeunload', (e) => {
+  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+});
 
 async function loadAllFromSupabase() {
   const hint = document.getElementById('save-hint');
