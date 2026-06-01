@@ -2,956 +2,256 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BCEE — Calcul Mensuel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0f0f11; color: #e8e8ec; font-family: 'Segoe UI', sans-serif; font-size: 13px; min-height: 100vh; }
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f0f11;color:#e8e8ec;font-family:'Segoe UI',sans-serif;font-size:13px;min-height:100vh}
+.header{background:#17171a;border-bottom:1px solid #2a2a32;padding:0 1.5rem;display:flex;align-items:center;gap:1rem;height:52px;position:sticky;top:0;z-index:100}
+.logo{font-size:1rem;font-weight:700;color:#c8f060;letter-spacing:-0.02em}
+.nav-btn{background:none;border:1px solid #2a2a32;color:#6b6b7a;font-size:0.75rem;padding:0.3rem 0.9rem;border-radius:3px;cursor:pointer;transition:all 0.15s}
+.nav-btn.active,.nav-btn:hover{background:rgba(200,240,96,0.1);border-color:rgba(200,240,96,0.3);color:#c8f060}
+#save-btn{background:rgba(200,240,96,0.1);border:1px solid rgba(200,240,96,0.3);color:#c8f060;font-size:0.75rem;padding:0.35rem 1rem;border-radius:3px;cursor:pointer;margin-left:auto}
+#save-hint{font-size:0.7rem;color:#3a3a44}
+.page{display:none}.page.active{display:block}
+.main{padding:1.5rem 2rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.5rem;max-width:1500px;margin:0 auto;align-items:start}
+.panel{display:flex;flex-direction:column;gap:1rem}
+.panel-title{font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:0.25rem}
+.solde-card{background:#17171a;border:1px solid #2a2a32;border-radius:4px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1.25rem}
+.solde-label{font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.25rem}
+.solde-input{background:#0f0f11;border:1px solid #2a2a32;color:#c8f060;font-size:1.25rem;font-weight:700;padding:0.35rem 0.65rem;border-radius:3px;width:150px;text-align:right}
+.solde-input:focus{outline:none;border-color:#c8f060}
+.table-wrap{background:#17171a;border:1px solid #2a2a32;border-radius:4px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead{background:#1e1e23}
+th{padding:0.5rem 0.5rem;text-align:left;font-size:0.6rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.1em;font-weight:500;border-bottom:1px solid #2a2a32}
+th.right{text-align:right}th.center{text-align:center}
+td{padding:0.25rem 0.4rem;border-bottom:1px solid rgba(42,42,50,0.4);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.betreff-input{background:transparent;border:none;color:#e8e8ec;font-size:0.82rem;width:100%;padding:0.15rem 0.25rem;border-radius:2px}
+.betreff-input:focus{outline:none;background:#0f0f11;border:1px solid #2a2a32}
+.amt-input{background:transparent;border:none;color:#e8e8ec;font-size:0.82rem;text-align:right;width:100%;padding:0.15rem 0.25rem;border-radius:2px}
+.amt-input:focus{outline:none;background:#0f0f11;border:1px solid #2a2a32}
+.amt-input::placeholder{color:#3a3a44}
+.date-input{background:transparent;border:none;color:#6b6b7a;font-size:0.75rem;text-align:center;width:100%;padding:0.15rem;border-radius:2px}
+.date-input:focus{outline:none;background:#0f0f11;border:1px solid #2a2a32;color:#e8e8ec}
+.move-btn{background:#2a2a32;border:none;color:#6b6b7a;cursor:pointer;border-radius:3px;padding:0.2rem 0.4rem;font-size:0.65rem;transition:all 0.15s;white-space:nowrap;display:block;margin:0 auto}
+.move-btn:hover{background:#c8f060;color:#0f0f11}
+.sep-row td{padding:0.15rem;background:#1a1a1f}
+.add-row-btn{background:rgba(200,240,96,0.06);border:1px dashed rgba(200,240,96,0.25);color:#c8f060;font-size:0.7rem;padding:0.3rem 1rem;border-radius:3px;cursor:pointer;width:100%}
+.del-btn{background:none;border:none;color:#6b6b7a;cursor:pointer;padding:0.2rem 0.3rem;border-radius:2px;font-size:0.8rem}
+.del-btn:hover{color:#f06060}
+.solde-fin{background:#17171a;border:1px solid #2a2a32;border-radius:4px;padding:1rem 1.25rem;display:flex;justify-content:space-between;align-items:center}
+.solde-fin-label{font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.1em}
+.solde-fin-sub{font-size:0.7rem;color:#3a3a44;margin-top:0.15rem}
+.solde-fin-value{font-size:1.6rem;font-weight:700}
+.pos{color:#60f0a0}.neg{color:#f06060}
+.save-hint-bar{font-size:0.65rem;color:#3a3a44;text-align:center;margin-top:0.5rem}
+.saved-flash{color:#c8f060!important}
 
-  .header { background: #17171a; border-bottom: 1px solid #2a2a32; padding: 0.9rem 2rem; display: flex; align-items: center; gap: 1rem; }
-  .logo { font-size: 1rem; font-weight: 700; color: #c8f060; letter-spacing: -0.02em; }
+/* Zusatz */
+.zusatz-wrap{background:#17171a;border:1px solid #2a2a32;border-radius:4px;overflow:hidden}
+.zusatz-header{display:flex;justify-content:flex-end;padding:0.5rem 0.75rem;background:#1e1e23;border-bottom:1px solid #2a2a32}
+.clear-btn{background:none;border:1px solid #2a2a32;color:#6b6b7a;font-size:0.7rem;padding:0.25rem 0.6rem;border-radius:3px;cursor:pointer}
+.clear-btn:hover{color:#f06060;border-color:#f06060}
 
-  .main { padding: 1.5rem 2rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; max-width: 1600px; margin: 0 auto; align-items: start; }
+/* Prets page */
+.prets-page{max-width:1100px;margin:0 auto;padding:1.5rem 2rem}
+.cards-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:#17171a;border:1px solid #2a2a32;border-radius:4px;padding:1rem 1.25rem}
+.stat-label{font-size:0.65rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:0.3rem}
+.stat-value{font-size:1.5rem;font-weight:700}
+.progress-bar{height:5px;background:#2a2a32;border-radius:2px;overflow:hidden;margin-top:0.4rem}
+.progress-fill{height:100%;border-radius:2px;transition:width 0.3s}
+.section-sep{margin-top:2rem;padding-top:1.5rem;border-top:1px solid #2a2a32}
 
-  /* Panel */
-  .panel { display: flex; flex-direction: column; gap: 1rem; }
-  .panel-title { font-size: 0.7rem; color: #6b6b7a; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.25rem; }
-
-  /* Solde Debut */
-  .solde-card { background: #17171a; border: 1px solid #2a2a32; border-radius: 4px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: 1.25rem; }
-  .solde-label { font-size: 0.7rem; color: #6b6b7a; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.25rem; }
-  .solde-input { background: #0f0f11; border: 1px solid #2a2a32; color: #c8f060; font-size: 1.25rem; font-weight: 700; padding: 0.35rem 0.65rem; border-radius: 3px; width: 150px; text-align: right; }
-  .solde-input:focus { outline: none; border-color: #c8f060; }
-
-  /* Table */
-  .table-wrap { background: #17171a; border: 1px solid #2a2a32; border-radius: 4px; overflow: hidden; }
-  table { width: 100%; border-collapse: collapse; }
-  thead { background: #1e1e23; }
-  th { padding: 0.5rem 0.5rem; text-align: left; font-size: 0.6rem; color: #6b6b7a; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; border-bottom: 1px solid #2a2a32; }
-  th.right { text-align: right; }
-  th.center { text-align: center; }
-  td { padding: 0.25rem 0.4rem; border-bottom: 1px solid rgba(42,42,50,0.4); vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: rgba(255,255,255,0.02); }
-
-  .betreff-input { background: transparent; border: none; color: #e8e8ec; font-size: 0.82rem; width: 100%; padding: 0.15rem 0.25rem; border-radius: 2px; }
-  .betreff-input:focus { outline: none; background: #0f0f11; border: 1px solid #2a2a32; }
-
-  .amt-input { background: transparent; border: none; color: #e8e8ec; font-size: 0.82rem; text-align: right; width: 100%; padding: 0.15rem 0.25rem; border-radius: 2px; }
-  .amt-input:focus { outline: none; background: #0f0f11; border: 1px solid #2a2a32; }
-  .amt-input::placeholder { color: #3a3a44; }
-
-  .date-input { background: transparent; border: none; color: #6b6b7a; font-size: 0.75rem; text-align: center; width: 100%; padding: 0.15rem; border-radius: 2px; }
-  .date-input:focus { outline: none; background: #0f0f11; border: 1px solid #2a2a32; color: #e8e8ec; }
-
-  .move-btn { background: #2a2a32; border: none; color: #6b6b7a; cursor: pointer; border-radius: 3px; padding: 0.2rem 0.4rem; font-size: 0.65rem; transition: all 0.15s; white-space: nowrap; display: block; margin: 0 auto; }
-  .move-btn:hover { background: #c8f060; color: #0f0f11; }
-
-  .sep-row td { padding: 0.15rem; background: #1a1a1f; }
-
-  /* Solde fin */
-  .solde-fin { background: #17171a; border: 1px solid #2a2a32; border-radius: 4px; padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center; }
-  .solde-fin-label { font-size: 0.7rem; color: #6b6b7a; text-transform: uppercase; letter-spacing: 0.1em; }
-  .solde-fin-sub { font-size: 0.7rem; color: #3a3a44; margin-top: 0.15rem; }
-  .solde-fin-value { font-size: 1.6rem; font-weight: 700; }
-  .pos { color: #60f0a0; }
-  .neg { color: #f06060; }
-
-  .save-hint { font-size: 0.65rem; color: #3a3a44; text-align: center; }
-  .saved-flash { color: #c8f060 !important; }
-
-  @media (max-width: 900px) {
-    .main { grid-template-columns: 1fr; }
-  }
+/* Historique */
+.histo-page{max-width:1300px;margin:0 auto;padding:1.5rem 2rem}
+.year-nav{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.year-btn{background:none;border:1px solid #2a2a32;color:#6b6b7a;font-size:0.75rem;padding:0.3rem 0.7rem;border-radius:3px;cursor:pointer;transition:all 0.15s}
+.year-btn.active{background:rgba(200,240,96,0.1);border-color:rgba(200,240,96,0.3);color:#c8f060}
+.histo-table-wrap{overflow-x:auto}
+.histo-table{width:100%;border-collapse:collapse;min-width:700px}
+.histo-sticky{position:sticky;left:0;background:#17171a;z-index:1;border-right:1px solid #2a2a32;min-width:140px;padding:0.4rem 0.75rem}
+.histo-cell{text-align:center;padding:0.25rem 0;border-left:1px solid rgba(42,42,50,0.2);min-width:42px;cursor:pointer}
+.histo-cell.inactive{background:#0a0a0c;cursor:default}
+.histo-cell.paid{background:rgba(96,240,160,0.15)}
+.histo-cell.overdue{background:rgba(240,96,96,0.08)}
 </style>
 </head>
 <body>
 
-<div class="header">
+<header class="header">
   <div class="logo">◆ BCEE — Calcul Mensuel</div>
-  <nav style="display:flex; gap:0.25rem; margin-right:1rem;">
-    <button onclick="showPage('calcul')" id="nav-calcul" style="background:rgba(200,240,96,0.1); border:1px solid rgba(200,240,96,0.3); color:#c8f060; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Calcul</button>
-    <button onclick="showPage('prets')" id="nav-prets" style="background:none; border:1px solid #2a2a32; color:#6b6b7a; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Prêts</button>
-    <button onclick="showPage('divers')" id="nav-divers" style="background:none; border:1px solid #2a2a32; color:#6b6b7a; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Divers</button>
-    <button onclick="showPage('historique')" id="nav-historique" style="background:none; border:1px solid #2a2a32; color:#6b6b7a; font-size:0.75rem; padding:0.3rem 0.9rem; border-radius:3px; cursor:pointer;">Historique</button>
+  <nav style="display:flex;gap:0.4rem;">
+    <button class="nav-btn active" id="nav-calcul" onclick="showPage('calcul')">Calcul</button>
+    <button class="nav-btn" id="nav-prets" onclick="showPage('prets')">Prêts</button>
+    <button class="nav-btn" id="nav-historique" onclick="showPage('historique')">Historique</button>
   </nav>
-  <div style="display:flex; align-items:center; gap:1rem;">
-    <div style="font-size:0.7rem; color:#3a3a44;" id="save-hint">Alle Änderungen automatisch gespeichert</div>
-    <button id="save-btn" onclick="manualSave()" style="background:rgba(200,240,96,0.1); border:1px solid rgba(200,240,96,0.3); color:#c8f060; font-family:'Segoe UI',sans-serif; font-size:0.75rem; padding:0.35rem 1rem; border-radius:3px; cursor:pointer; transition:all 0.15s;">💾 Speichern</button>
-  </div>
-</div>
+  <span id="save-hint" style="font-size:0.7rem;color:#3a3a44;">Alle Änderungen manuell speichern</span>
+  <button id="save-btn" onclick="manualSave()">💾 Speichern</button>
+</header>
 
-<div id="page-calcul">
+<!-- CALCUL PAGE -->
+<div id="page-calcul" class="page active">
 <div class="main">
 
-  <!-- ===== BCEE COMMUN ===== -->
+  <!-- BCEE COMMUN -->
   <div class="panel">
     <div>
       <div class="panel-title">BCEE Commun</div>
       <div class="solde-card">
-        <div>
-          <div class="solde-label">Solde début</div>
-          <input class="solde-input" type="number" id="solde-comm" value="3916" step="0.01" oninput="scheduleSave(); calcComm()">
-        </div>
-        <div style="color:#3a3a44; font-size:0.75rem;">← manuell anpassen</div>
+        <div><div class="solde-label">Solde début</div>
+        <input class="solde-input" type="number" id="solde-comm" value="3916" step="0.01" oninput="markDirty();calcComm()"></div>
+        <div style="color:#3a3a44;font-size:0.75rem;">← manuell</div>
       </div>
     </div>
-
     <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:33%">Betreff</th>
-            <th class="right" style="width:19%">Geplant</th>
-            <th class="center" style="width:8%">⇄</th>
-            <th class="right" style="width:19%">Bezahlt</th>
-            <th class="center" style="width:21%">Datum</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-commun"></tbody>
-      </table>
+      <table><thead><tr>
+        <th style="width:32%">Betreff</th>
+        <th class="right" style="width:19%">Geplant</th>
+        <th class="center" style="width:8%">⇄</th>
+        <th class="right" style="width:19%">Bezahlt</th>
+        <th class="center" style="width:16%">Datum</th>
+        <th style="width:6%"></th>
+      </tr></thead>
+      <tbody id="tbody-commun"></tbody></table>
     </div>
-
     <div class="solde-fin">
-      <div>
-        <div class="solde-fin-label">Solde fin disponibel</div>
-        <div class="solde-fin-sub">Solde début − Geplant</div>
-      </div>
+      <div><div class="solde-fin-label">Solde fin disponibel</div>
+      <div class="solde-fin-sub">Solde début − Geplant</div></div>
       <div class="solde-fin-value" id="solde-fin-comm">–</div>
     </div>
   </div>
 
-  <!-- ===== BCEE PRIVÉ ===== -->
+  <!-- BCEE PRIVÉ -->
   <div class="panel">
     <div>
       <div class="panel-title">BCEE Privé</div>
       <div class="solde-card">
-        <div>
-          <div class="solde-label">Solde début</div>
-          <input class="solde-input" type="number" id="solde-priv" value="2046" step="0.01" oninput="scheduleSave(); calcPriv()">
-        </div>
-        <div style="color:#3a3a44; font-size:0.75rem;">← manuell anpassen</div>
+        <div><div class="solde-label">Solde début</div>
+        <input class="solde-input" type="number" id="solde-priv" value="2046" step="0.01" oninput="markDirty();calcPriv()"></div>
+        <div style="color:#3a3a44;font-size:0.75rem;">← manuell</div>
       </div>
     </div>
-
     <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:33%">Betreff</th>
-            <th class="right" style="width:19%">Geplant</th>
-            <th class="center" style="width:8%">⇄</th>
-            <th class="right" style="width:19%">Bezahlt</th>
-            <th class="center" style="width:21%">Datum</th>
-          </tr>
-        </thead>
-        <tbody id="tbody-priv"></tbody>
-      </table>
+      <table><thead><tr>
+        <th style="width:32%">Betreff</th>
+        <th class="right" style="width:19%">Geplant</th>
+        <th class="center" style="width:8%">⇄</th>
+        <th class="right" style="width:19%">Bezahlt</th>
+        <th class="center" style="width:16%">Datum</th>
+        <th style="width:6%"></th>
+      </tr></thead>
+      <tbody id="tbody-priv"></tbody></table>
     </div>
-
     <div class="solde-fin">
-      <div>
-        <div class="solde-fin-label">Solde fin disponibel</div>
-        <div class="solde-fin-sub">Solde début − Geplant</div>
-      </div>
+      <div><div class="solde-fin-label">Solde fin disponibel</div>
+      <div class="solde-fin-sub">Solde début − Geplant</div></div>
       <div class="solde-fin-value" id="solde-fin-priv">–</div>
     </div>
   </div>
 
   <!-- COL 3: Zusatz + Virements -->
-  <div style="display:flex; flex-direction:column; gap:1rem;">
-    <!-- ===== EXTRA TABELLE ===== -->
-  <div class="panel" style="margin-top:0;">
-    <div>
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <div class="panel">
       <div class="panel-title">Zusatz</div>
-    </div>
-    <div style="text-align:right; margin-bottom:0.5rem;"><button onclick="clearExtra()" style="background:#2a2a32; border:none; color:#6b6b7a; font-size:0.7rem; padding:0.3rem 0.75rem; border-radius:3px; cursor:pointer;" onmouseover="this.style.color='#f06060'" onmouseout="this.style.color='#6b6b7a'">✕ Alles löschen</button></div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th style="width:60%">Bezeichnung</th>
-            <th class="right" style="width:40%">Betrag (€)</th>
-          </tr>
-        </thead>
+      <div class="zusatz-wrap">
+        <div class="zusatz-header">
+          <button class="clear-btn" onclick="clearExtra()">✕ Alles löschen</button>
+        </div>
+        <table><thead><tr>
+          <th class="right">Betrag (€)</th>
+        </tr></thead>
         <tbody id="tbody-extra"></tbody>
-        <tfoot>
-          <tr style="background:#1e1e23; border-top:2px solid #2a2a32;">
-            <td style="padding:0.6rem 0.5rem; font-size:0.7rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em;">Summe</td>
-            <td style="padding:0.6rem 0.5rem; text-align:right; font-size:1.2rem; font-weight:700;" id="extra-summe">–</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th style="width:40%">Bezeichnung</th>
-              <th class="right" style="width:20%">Betrag</th>
-              <th style="width:40%">Remarque</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-vir"></tbody>
+        <tfoot><tr style="background:#1e1e23;border-top:2px solid #2a2a32;">
+          <td style="padding:0.6rem 0.5rem;text-align:right;font-size:1.1rem;font-weight:700;" id="extra-summe">–</td>
+        </tr></tfoot>
         </table>
       </div>
-      <div class="save-hint" id="vir-hint" style="margin-top:0.5rem;">Automatisch gespeichert</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Virements à effectuer</div>
+      <div class="table-wrap">
+        <table><thead><tr>
+          <th style="width:40%">Bezeichnung</th>
+          <th class="right" style="width:22%">Betrag</th>
+          <th style="width:38%">Remarque</th>
+        </tr></thead>
+        <tbody id="tbody-vir"></tbody></table>
+      </div>
+      <div class="save-hint-bar" id="vir-hint">Automatisch gespeichert</div>
     </div>
   </div>
 
 </div>
 </div>
-<!-- ========== PAGE: PRÊTS ========== -->
-<div id="page-prets" style="display:none;">
-<div style="max-width:1100px; margin:0 auto; padding:1.5rem 2rem;">
 
-  <div style="margin-bottom:1.5rem;">
-    <div style="font-size:0.7rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.5rem;">Monatliche Fixkosten — Prêts & Charges</div>
+<!-- PRETS PAGE -->
+<div id="page-prets" class="page">
+<div class="prets-page">
+  <div style="font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:1.5rem;">Monatliche Fixkosten — Prêts & Charges</div>
+  <div class="cards-grid" id="prets-cards"></div>
+  <div class="table-wrap">
+    <table><thead><tr>
+      <th style="width:20%">Bezeichnung</th>
+      <th class="right" style="width:11%">Rate/Mo</th>
+      <th style="width:16%">Betreff Überw.</th>
+      <th class="center" style="width:10%">Start</th>
+      <th class="center" style="width:10%">Ende</th>
+      <th class="right" style="width:11%">Restschuld</th>
+      <th style="width:22%">Fortschritt</th>
+    </tr></thead>
+    <tbody id="tbody-prets"></tbody>
+    <tfoot><tr style="background:#1e1e23;border-top:2px solid #2a2a32;">
+      <td style="padding:0.7rem 0.75rem;font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;">Total / Monat</td>
+      <td style="padding:0.7rem 0.75rem;text-align:right;font-size:1rem;font-weight:700;color:#f06060;" id="prets-total">–</td>
+      <td colspan="5"></td>
+    </tr></tfoot></table>
   </div>
 
-  <!-- KREDIT KARTEN -->
-  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem;" id="prets-cards"></div>
-
-  <!-- TABELLE -->
-  <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; overflow:hidden; margin-bottom:1.5rem;">
-    <table style="width:100%; border-collapse:collapse;">
-      <thead style="background:#1e1e23;">
-        <tr>
-          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:22%;">Bezeichnung</th>
-          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Rate/Mo</th>
-          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:18%;">Betreff Überweisung</th>
-          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Start</th>
-          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Ende</th>
-          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Restschuld</th>
-          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:16%;">Fortschritt</th>
-        </tr>
-      </thead>
-      <tbody id="tbody-prets"></tbody>
-      <tfoot>
-        <tr style="background:#1e1e23; border-top:2px solid #2a2a32;">
-          <td style="padding:0.7rem 0.75rem; font-size:0.7rem; color:#6b6b7a; text-transform:uppercase;">Total / Monat</td>
-          <td style="padding:0.7rem 0.75rem; text-align:right; font-size:1rem; font-weight:700; color:#f06060;" id="prets-total">–</td>
-          <td colspan="5"></td>
-        </tr>
-      </tfoot>
-    </table>
+  <div class="section-sep">
+    <div style="font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:1rem;">Divers — Charges mensuelles</div>
+    <div class="cards-grid" id="divers-cards"></div>
+    <div class="table-wrap">
+      <table><thead><tr>
+        <th style="width:20%">Bezeichnung</th>
+        <th class="right" style="width:11%">Rate/Mo</th>
+        <th style="width:16%">Betreff Überw.</th>
+        <th class="center" style="width:10%">Start</th>
+        <th class="center" style="width:10%">Ende</th>
+        <th style="width:33%">Fortschritt</th>
+      </tr></thead>
+      <tbody id="tbody-divers"></tbody>
+      <tfoot><tr style="background:#1e1e23;border-top:2px solid #2a2a32;">
+        <td style="padding:0.7rem 0.75rem;font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;">Total / Monat</td>
+        <td style="padding:0.7rem 0.75rem;text-align:right;font-size:1rem;font-weight:700;color:#f06060;" id="divers-total">–</td>
+        <td colspan="4"></td>
+      </tr></tfoot></table>
+    </div>
   </div>
-
 </div>
 </div>
 
-
-<script>
-// ===== SUPABASE =====
-const SUPA_URL = 'https://hthtvoswugkcftrkpjvs.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0aHR2b3N3dWdrY2Z0cmtwanZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMTQ3NzYsImV4cCI6MjA5NTc5MDc3Nn0.XLxTwgGWLNZYAlpuTcirdxDjcPaeYtuhDtMx1oh2Muc';
-const { createClient } = supabase;
-const sb = createClient(SUPA_URL, SUPA_KEY);
-
-let isDirty = false;
-
-async function saveToSupabase(key, value) {
-  try {
-    await sb.from('calcul_data').upsert({ key, value, updated_at: new Date().toISOString() });
-  } catch(e) { console.error('Save error:', e); }
-}
-
-async function loadFromSupabase(key) {
-  try {
-    const { data } = await sb.from('calcul_data').select('value').eq('key', key).single();
-    return data ? data.value : null;
-  } catch(e) { return null; }
-}
-
-function markDirty() {
-  isDirty = true;
-  const btn = document.getElementById('save-btn');
-  const hint = document.getElementById('save-hint');
-  if (btn) { btn.style.background = 'rgba(240,96,96,0.15)'; btn.style.borderColor = 'rgba(240,96,96,0.5)'; btn.style.color = '#f06060'; btn.textContent = '💾 Nicht gespeichert'; }
-  if (hint) { hint.textContent = 'Ungespeicherte Änderungen'; hint.style.color = '#f06060'; }
-}
-
-async function manualSave() {
-  const btn = document.getElementById('save-btn');
-  const hint = document.getElementById('save-hint');
-  if (btn) { btn.textContent = '⏳ Speichere...'; btn.style.color = '#6b6b7a'; }
-  await Promise.all([
-    saveToSupabase('bcee_commun_rows', rowsComm),
-    saveToSupabase('bcee_priv_rows', rowsPriv),
-    saveToSupabase('bcee_commun_solde', document.getElementById('solde-comm').value),
-    saveToSupabase('bcee_priv_solde', document.getElementById('solde-priv').value),
-    saveToSupabase('bcee_vir_rows', rowsVir),
-    saveToSupabase('bcee_prets_rows', rowsPrets),
-    saveToSupabase('bcee_histo', histoPaid),
-    saveToSupabase('bcee_divers_rows', rowsDivers),
-  ]);
-  isDirty = false;
-  if (btn) { btn.style.background = 'rgba(200,240,96,0.1)'; btn.style.borderColor = 'rgba(200,240,96,0.3)'; btn.style.color = '#c8f060'; btn.textContent = '✓ Gespeichert'; }
-  if (hint) { hint.textContent = 'Gespeichert'; hint.style.color = '#60f0a0'; }
-  setTimeout(() => {
-    if (btn) btn.textContent = '💾 Speichern';
-    if (hint) { hint.textContent = 'Alle Änderungen manuell speichern'; hint.style.color = '#3a3a44'; }
-  }, 2000);
-}
-
-function scheduleSave() { markDirty(); }
-
-// Warn before closing if unsaved
-window.addEventListener('beforeunload', (e) => {
-  if (isDirty) { e.preventDefault(); e.returnValue = ''; }
-});
-
-async function loadAllFromSupabase() {
-  const hint = document.getElementById('save-hint');
-  if (hint) hint.textContent = 'Lade Daten...';
-  
-  const [commRows, privRows, commSolde, privSolde, virRows, pretsRows, histoData, diversData] = await Promise.all([
-    loadFromSupabase('bcee_commun_rows'),
-    loadFromSupabase('bcee_priv_rows'),
-    loadFromSupabase('bcee_commun_solde'),
-    loadFromSupabase('bcee_priv_solde'),
-    loadFromSupabase('bcee_vir_rows'),
-    loadFromSupabase('bcee_prets_rows'),
-  ]);
-
-  if (commRows) rowsComm = commRows;
-  if (privRows) rowsPriv = privRows;
-  if (commSolde) document.getElementById('solde-comm').value = commSolde;
-  if (privSolde) document.getElementById('solde-priv').value = privSolde;
-  if (virRows) rowsVir = virRows;
-  if (pretsRows) { rowsPrets = pretsRows; renderPrets(); }
-  if (histoData) { histoPaid = histoData; renderHistorique(); }
-  if (diversData) { rowsDivers = diversData; renderDivers(); }
-
-  renderRows(rowsComm, 'tbody-commun', 'commun');
-  renderRows(rowsPriv, 'tbody-priv', 'priv');
-  renderVir();
-  renderExtra();
-  calcComm();
-  calcPriv();
-  if (hint) { hint.textContent = '✓ Daten geladen'; setTimeout(()=>{ hint.textContent='Alle Änderungen automatisch gespeichert'; }, 1500); }
-}
-
-const DEFAULT_COMM = [
-  { betreff: 'BCEE Tesla',               geplant: -857.93,  bezahlt: '',        datum: '01/mm/aa' },
-  { betreff: 'DKV',                      geplant: -224.64,  bezahlt: '',        datum: '02/mm/aa' },
-  { betreff: 'CMCM',                     geplant: -58.25,   bezahlt: '',        datum: '02/mm/aa' },
-  { betreff: 'AXA Maison',               geplant: -162.84,  bezahlt: '',        datum: '02/mm/aa' },
-  { betreff: 'AXA Porsche',              geplant: -201.49,  bezahlt: '',        datum: '02/mm/aa' },
-  { betreff: 'AXA Dacia',                geplant: -108.46,  bezahlt: '',        datum: '02/mm/aa' },
-  { betreff: 'Enovos',                   geplant: -498.95,  bezahlt: '',        datum: '05/06/aa' },
-  { betreff: 'Record Credit (Fotovolt)', geplant: -399.62,  bezahlt: '',        datum: '10/mm/aa' },
-  { betreff: 'Handicap Int',             geplant: -20.00,   bezahlt: '',        datum: '20/mm/aa' },
-  { betreff: 'Panamera',                 geplant: -896.55,  bezahlt: '',        datum: '21/mm/aa' },
-  { betreff: 'Tango',                    geplant: -220.00,  bezahlt: '',        datum: '23/mm/aa' },
-  { betreff: 'Foyer Pension Jim',        geplant: -150.00,  bezahlt: '',        datum: '28/mm/aa' },
-  { betreff: 'Foyer Pension Jak',        geplant: -150.00,  bezahlt: '',        datum: '28/mm/aa' },
-  { betreff: 'Axa Tesla',                geplant: -143.80,  bezahlt: '',        datum: '29/mm/aa' },
-  { betreff: '---' },
-  { betreff: 'Tft CRRA',                geplant: -1600.00, bezahlt: '',        datum: '' },
-  { betreff: 'ING Maison',              geplant: -1910.00, bezahlt: '',        datum: '' },
-  { betreff: 'Impôts',                  geplant: -2500.00, bezahlt: '',        datum: '' },
-  { betreff: 'Impôts nobezuelen',       geplant: '',        bezahlt: '',        datum: '' },
-  { betreff: 'CCSS',                    geplant: -246.24,  bezahlt: '',        datum: '' },
-  { betreff: 'Impôts Duster',           geplant: -144.00,  bezahlt: '',        datum: '' },
-  { betreff: 'Enovos (2)',              geplant: -498.95,  bezahlt: '',        datum: '' },
-  { betreff: 'Enovos (3)',              geplant: -73.60,   bezahlt: '',        datum: '' },
-  { betreff: 'Buy Way',                 geplant: -140.00,  bezahlt: '',        datum: '' },
-  { betreff: 'Eimab',                   geplant: '',        bezahlt: '',        datum: '' },
-  { betreff: 'Enodrive',                geplant: '',        bezahlt: '',        datum: '' },
-  { betreff: 'Reserve',                 geplant: '',        bezahlt: '',        datum: '' },
-  { betreff: 'Schumacher',              geplant: -536.98,  bezahlt: '',        datum: '' },
-];
-
-const DEFAULT_PRIV = [
-  { betreff: 'BCEE Visa',  geplant: -998.00,  bezahlt: '', datum: '07/mm/aa' },
-  { betreff: 'Duster',     geplant: -494.56,  bezahlt: '', datum: '30/mm/aa' },
-  { betreff: 'Chasse',     geplant: -250.00,  bezahlt: '', datum: '' },
-  { betreff: 'Vacance',    geplant: '',        bezahlt: '', datum: '' },
-];
-
-let rowsComm = [];
-let rowsPriv = [];
-
-function load() {
-  try {
-    const sc = sessionStorage.getItem('bcee_comm_rows');
-    const sp = sessionStorage.getItem('bcee_priv_rows');
-    const solC = sessionStorage.getItem('bcee_comm_solde');
-    const solP = sessionStorage.getItem('bcee_priv_solde');
-    if (solC) document.getElementById('solde-comm').value = solC;
-    if (solP) document.getElementById('solde-priv').value = solP;
-    rowsComm = sc ? JSON.parse(sc) : DEFAULT_COMM.map(r => ({...r}));
-    rowsPriv = sp ? JSON.parse(sp) : DEFAULT_PRIV.map(r => ({...r}));
-  } catch(e) {
-    rowsComm = DEFAULT_COMM.map(r => ({...r}));
-    rowsPriv = DEFAULT_PRIV.map(r => ({...r}));
-  }
-}
-
-function saveAll() { scheduleSave(); }
-
-function fmt(n) {
-  if (n === '' || n === null || n === undefined || isNaN(n)) return '';
-  return new Intl.NumberFormat('de-LU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
-
-function renderRows(rows, tbodyId, prefix) {
-  const tbody = document.getElementById(tbodyId);
-  tbody.innerHTML = rows.map((r, i) => {
-    if (r.betreff === '---') return `<tr class="sep-row"><td colspan="6"></td></tr>`;
-    const gVal = (r.geplant !== '' && r.geplant !== null) ? r.geplant : '';
-    const bVal = (r.bezahlt !== '' && r.bezahlt !== null) ? r.bezahlt : '';
-    return `<tr>
-      <td><input class="betreff-input" type="text" value="${r.betreff}" onchange="updateRow('${prefix}',${i},'betreff',this.value)"></td>
-      <td><input class="amt-input" type="number" step="0.01" value="${gVal}" placeholder="–" onchange="updateRow('${prefix}',${i},'geplant',this.value)"></td>
-      <td style="text-align:center;">
-        ${gVal !== '' ? `<button class="move-btn" onclick="moveRight('${prefix}',${i})" title="→ Bezahlt">→</button>` : ''}
-        ${bVal !== '' ? `<button class="move-btn" onclick="moveLeft('${prefix}',${i})" title="← Geplant">←</button>` : ''}
-      </td>
-      <td><input class="amt-input" type="number" step="0.01" value="${bVal}" placeholder="–" onchange="updateRow('${prefix}',${i},'bezahlt',this.value)"></td>
-      <td><input class="date-input" type="text" value="${r.datum||''}" placeholder="tt/mm/aa" onchange="updateRow('${prefix}',${i},'datum',this.value)"></td>
-      <td style="text-align:center; width:28px;">
-        <button class="move-btn" onclick="deleteRow('${prefix}',${i})" title="Zeile löschen" style="color:#f06060; padding:0.15rem 0.35rem;">✕</button>
-      </td>
-    </tr>`;
-  }).join('');
-  // Add row button at bottom
-  const addTr = document.createElement('tr');
-  addTr.innerHTML = `<td colspan="6" style="padding:0.3rem 0.5rem;">
-    <button onclick="addRow('${prefix}')" style="background:rgba(200,240,96,0.08); border:1px dashed rgba(200,240,96,0.3); color:#c8f060; font-size:0.7rem; padding:0.3rem 1rem; border-radius:3px; cursor:pointer; width:100%;">+ Zeile hinzufügen</button>
-  </td>`;
-  tbody.appendChild(addTr);
-}
-
-function getRows(prefix) { return prefix === 'commun' ? rowsComm : rowsPriv; }
-
-function updateRow(prefix, i, col, val) {
-  const rows = getRows(prefix);
-  rows[i][col] = (col === 'geplant' || col === 'bezahlt') ? (val === '' ? '' : parseFloat(val)) : val;
-  if (prefix === 'commun') calcComm(); else calcPriv();
-  scheduleSave();
-}
-
-function moveRight(prefix, i) {
-  const rows = getRows(prefix);
-  if (rows[i].geplant !== '') { rows[i].bezahlt = rows[i].geplant; rows[i].geplant = ''; }
-  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
-  else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
-  scheduleSave();
-}
-
-function moveLeft(prefix, i) {
-  const rows = getRows(prefix);
-  if (rows[i].bezahlt !== '') { rows[i].geplant = rows[i].bezahlt; rows[i].bezahlt = ''; }
-  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
-  else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
-  scheduleSave();
-}
-
-
-function addRow(prefix) {
-  const rows = getRows(prefix);
-  rows.push({ betreff: '', geplant: '', bezahlt: '', datum: '' });
-  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
-  else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
-  scheduleSave();
-  // Focus new row
-  const inputs = document.querySelectorAll(`#tbody-${prefix} input.betreff-input`);
-  if (inputs.length) inputs[inputs.length-1].focus();
-}
-
-function deleteRow(prefix, i) {
-  const rows = getRows(prefix);
-  rows.splice(i, 1);
-  if (prefix === 'commun') { renderRows(rowsComm, 'tbody-commun', 'commun'); calcComm(); }
-  else { renderRows(rowsPriv, 'tbody-priv', 'priv'); calcPriv(); }
-  scheduleSave();
-}
-function calcComm() {
-  const solde = parseFloat(document.getElementById('solde-comm').value) || 0;
-  let total = 0;
-  rowsComm.forEach(r => { if (r.betreff !== '---' && r.geplant !== '' && !isNaN(r.geplant)) total += parseFloat(r.geplant); });
-  const fin = solde + total;
-  const el = document.getElementById('solde-fin-comm');
-  el.textContent = fmt(fin) + ' €';
-  el.className = 'solde-fin-value ' + (fin >= 0 ? 'pos' : 'neg');
-}
-
-function calcPriv() {
-  const solde = parseFloat(document.getElementById('solde-priv').value) || 0;
-  let total = 0;
-  rowsPriv.forEach(r => { if (r.betreff !== '---' && r.geplant !== '' && !isNaN(r.geplant)) total += parseFloat(r.geplant); });
-  const fin = solde + total;
-  const el = document.getElementById('solde-fin-priv');
-  el.textContent = fmt(fin) + ' €';
-  el.className = 'solde-fin-value ' + (fin >= 0 ? 'pos' : 'neg');
-}
-
-// Show defaults immediately, then load from Supabase
-load();
-renderRows(rowsComm, 'tbody-commun', 'commun');
-renderRows(rowsPriv, 'tbody-priv', 'priv');
-calcComm();
-calcPriv();
-
-// ===== EXTRA TABELLE =====
-const DEFAULT_EXTRA = Array.from({length:10}, () => ({bez:'', betrag:''}));
-let rowsExtra = [];
-
-function clearExtra() {
-  rowsExtra = DEFAULT_EXTRA.map(r=>({...r}));
-  renderExtra();
-}
-
-function loadExtra() {
-  rowsExtra = DEFAULT_EXTRA.map(r=>({...r}));
-}
-
-function saveExtra() { /* not persisted */ }
-
-function renderExtra() {
-  const tbody = document.getElementById('tbody-extra');
-  tbody.innerHTML = rowsExtra.map((r,i) => `<tr>
-    <td><input class="amt-input" type="number" step="0.01" value="${r.betrag!==''?r.betrag:''}" placeholder="0.00"
-      id="extra-${i}"
-      onchange="rowsExtra[${i}].betrag=this.value===''?'':parseFloat(this.value); calcExtra(); saveExtra();"
-      onkeydown="if(event.key==='Enter'){event.preventDefault(); var next=document.getElementById('extra-${i+1}'); if(next) next.focus();}">
-    </td>
-  </tr>`).join('');
-  calcExtra();
-}
-
-function calcExtra() {
-  let sum = 0;
-  rowsExtra.forEach(r => { if(r.betrag!=='' && !isNaN(r.betrag)) sum += parseFloat(r.betrag); });
-  const el = document.getElementById('extra-summe');
-  el.textContent = new Intl.NumberFormat('de-LU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(sum) + ' €';
-  el.style.color = sum >= 0 ? '#60f0a0' : '#f06060';
-}
-
-loadExtra();
-renderExtra();
-
-
-
-
-
-
-// ===== VIREMENTS =====
-const DEFAULT_VIR = [
-  { bez: 'TFT ING => CCRA',              betrag: 150,    rem: 'LU28 0090 0000 0678 1447' },
-  { bez: 'TFT Impôts',                   betrag: 1500,   rem: '' },
-  { bez: 'Salaire Tina',                 betrag: 616.19, rem: '' },
-  { bez: 'Axa Duster',                   betrag: 108.46, rem: 'Contrat 25/0260573' },
-  { bez: 'Axa Tesla',                    betrag: 144.43, rem: '' },
-  { bez: 'Axa Panamera',                 betrag: 193.95, rem: 'Contrat 25/7195825' },
-  { bez: 'Axa Maison',                   betrag: 111.95, rem: 'Contrat 10/5749920' },
-  { bez: 'Lotto',                        betrag: 50,     rem: '' },
-  { bez: 'Duster',                       betrag: 494.56, rem: '' },
-  { bez: 'Panamera',                     betrag: 896.55, rem: 'le 21 de chaque mois' },
-  { bez: 'Tesla',                        betrag: 857.93, rem: '' },
-  { bez: 'Avance impôts',               betrag: 4600,   rem: 'LU13 1111 0069 6679 0000' },
-  { bez: 'CMCM mensuelle',               betrag: 57.04,  rem: '' },
-  { bez: 'Avance chasse L93 MM/2021',    betrag: 250,    rem: 'LU72 0099 7800 0100 0033' },
-  { bez: 'Société Tir Echternach',       betrag: 100,    rem: 'LU29 0021 1185 1570 0000' },
-  { bez: 'Dropbox mars',                 betrag: 204,    rem: '' },
-  { bez: 'Microsoft Family',             betrag: 99,     rem: '' },
-  { bez: 'ACL fin novembre',             betrag: 119,    rem: '' },
-  { bez: 'ANNUEL Kannerhaus cotisation', betrag: 20,     rem: 'a faire en janvier' },
-  { bez: 'ANNUEL SIW cotisation',        betrag: 15,     rem: 'a faire en janvier' },
-  { bez: 'Buyway',                       betrag: 140,    rem: '' },
-];
-let rowsVir = [];
-
-function loadVir() {
-  try {
-    const s = sessionStorage.getItem('bcee_vir_rows');
-    rowsVir = s ? JSON.parse(s) : DEFAULT_VIR.map(r=>({...r}));
-  } catch(e) { rowsVir = DEFAULT_VIR.map(r=>({...r})); }
-}
-
-function saveVir() { scheduleSave(); }
-
-function renderVir() {
-  const tbody = document.getElementById('tbody-vir');
-  if (!tbody) return;
-  tbody.innerHTML = rowsVir.map((r,i) => `<tr>
-    <td><input class="betreff-input" type="text" value="${r.bez}" onchange="rowsVir[${i}].bez=this.value; saveVir();"></td>
-    <td><input class="amt-input" type="number" step="0.01" value="${r.betrag}" onchange="rowsVir[${i}].betrag=this.value===''?'':parseFloat(this.value); saveVir();"></td>
-    <td><input class="betreff-input" type="text" value="${r.rem}" style="color:#6b6b7a;" onchange="rowsVir[${i}].rem=this.value; saveVir();"></td>
-  </tr>`).join('');
-}
-
-loadVir();
-renderVir();
-
-// Load from Supabase (overrides defaults)
-loadAllFromSupabase();
-
-// Init historique after DOM is fully loaded
-window.addEventListener('DOMContentLoaded', () => {
-  loadHisto();
-  renderHistorique();
-});
-
-
-function showPage(page) {
-  document.getElementById('page-calcul').style.display = page === 'calcul' ? 'block' : 'none';
-  document.getElementById('page-prets').style.display = page === 'prets' ? 'block' : 'none';
-  document.getElementById('nav-calcul').style.background = page === 'calcul' ? 'rgba(200,240,96,0.1)' : 'none';
-  document.getElementById('nav-calcul').style.color = page === 'calcul' ? '#c8f060' : '#6b6b7a';
-  document.getElementById('nav-calcul').style.borderColor = page === 'calcul' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
-  document.getElementById('nav-prets').style.background = page === 'prets' ? 'rgba(200,240,96,0.1)' : 'none';
-  document.getElementById('nav-prets').style.color = page === 'prets' ? '#c8f060' : '#6b6b7a';
-  document.getElementById('nav-prets').style.borderColor = page === 'prets' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
-  const hEl = document.getElementById('page-historique');
-  if (hEl) hEl.style.display = page === 'historique' ? 'block' : 'none';
-  const navH = document.getElementById('nav-historique');
-  if (navH) {
-    navH.style.background = page === 'historique' ? 'rgba(200,240,96,0.1)' : 'none';
-    navH.style.color = page === 'historique' ? '#c8f060' : '#6b6b7a';
-    navH.style.borderColor = page === 'historique' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
-  }
-  const dEl = document.getElementById('page-divers');
-  if (dEl) dEl.style.display = page === 'divers' ? 'block' : 'none';
-  const navD = document.getElementById('nav-divers');
-  if (navD) {
-    navD.style.background = page === 'divers' ? 'rgba(200,240,96,0.1)' : 'none';
-    navD.style.color = page === 'divers' ? '#c8f060' : '#6b6b7a';
-    navD.style.borderColor = page === 'divers' ? 'rgba(200,240,96,0.3)' : '#2a2a32';
-  }
-}
-
-// ========== PRÊTS PAGE ==========
-const DEFAULT_PRETS = [
-  { name: 'Tesla',          rate: 857.93,  ref: 'Tesla',          start: '2026-03-01', end: '2031-02-01', total: 51475.80 },
-  { name: 'Photovoltaique', rate: 399.62,  ref: 'Record Credit',  start: '2023-10-01', end: '2033-09-01', total: 47954.40 },
-  { name: 'Duster',         rate: 494.56,  ref: 'Duster',         start: '2022-06-01', end: '2033-03-01', total: 41543.04 },
-  { name: 'Panamera',       rate: 896.55,  ref: 'Panamera',       start: '2025-02-01', end: '2035-01-01', total: 107586.00 },
-  { name: 'Logement',       rate: 1910.00, ref: 'ING Maison',     start: '2020-08-01', end: '2041-08-01', total: 482070.00 },
-];
-let rowsPrets = [];
-
-const DEFAULT_DIVERS = [
-  { name: 'BuyWay',             rate: 140.00,  ref: 'BuyWay',         start: '2026-02-01', end: '2026-11-01', total: 1500.00 },
-  { name: 'Avance Impôts',      rate: 1550.00, ref: 'Avance Impôts',  start: '2025-06-01', end: '2027-12-01', total: 0 },
-  { name: 'Salaire Tina',       rate: 616.19,  ref: 'Salaire Tina',   start: '2020-01-01', end: '2030-12-01', total: 0 },
-  { name: 'CCSS',               rate: 246.24,  ref: 'CCSS',           start: '2023-01-01', end: '2028-12-01', total: 0 },
-  { name: 'Bail L93 Merkholtz', rate: 250.00,  ref: 'Bail L93',       start: '2021-01-01', end: '2027-04-01', total: 0 },
-];
-let rowsDivers = [];
-
-function loadPrets() {
-  try {
-    const s = sessionStorage.getItem('bcee_prets');
-    rowsPrets = s ? JSON.parse(s) : DEFAULT_PRETS.map(r=>({...r}));
-  } catch(e) { rowsPrets = DEFAULT_PRETS.map(r=>({...r})); }
-}
-
-function savePrets() {
-  try { sessionStorage.setItem('bcee_prets', JSON.stringify(rowsPrets)); } catch(e) {}
-  scheduleSave();
-}
-
-// Alles bezahlt bis Mai 2026 — nächste offene Rate: Juni 2026
-const REFERENCE_DATE = new Date(2026, 5, 1); // Juni 2026
-
-function getMonthsLeft(endDate) {
-  if (!endDate) return 0;
-  const end = new Date(endDate);
-  const ref = REFERENCE_DATE;
-  return Math.max(0, (end.getFullYear() - ref.getFullYear())*12 + (end.getMonth() - ref.getMonth()));
-}
-
-function getPct(startDate, endDate) {
-  if (!startDate || !endDate) return 0;
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  const ref = REFERENCE_DATE.getTime();
-  return Math.min(100, Math.max(0, Math.round((ref - start) / (end - start) * 100)));
-}
-
-function fmtDate(d) {
-  if (!d) return '–';
-  const dt = new Date(d);
-  return dt.toLocaleDateString('de-LU', { month: 'short', year: '2-digit' });
-}
-
-function renderPrets() {
-  const tbody = document.getElementById('tbody-prets');
-  if (!tbody) return;
-  let total = 0;
-  tbody.innerHTML = rowsPrets.map((r,i) => {
-    total += parseFloat(r.rate) || 0;
-    const monthsLeft = getMonthsLeft(r.end);
-    const restschuld = r.total > 0 ? Math.round(monthsLeft * r.rate) : 0;
-    const pct = getPct(r.start, r.end);
-    const pctColor = pct > 80 ? '#60f0a0' : pct > 50 ? '#60c8f0' : '#c8f060';
-    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.5);">
-      <td style="padding:0.5rem 0.75rem;">
-        <input class="betreff-input" type="text" value="${r.name}" onchange="rowsPrets[${i}].name=this.value; renderPrets(); savePrets();" style="font-weight:600;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:right;">
-        <input class="amt-input" type="number" step="0.01" value="${r.rate}" onchange="rowsPrets[${i}].rate=parseFloat(this.value)||0; renderPrets(); savePrets();">
-      </td>
-      <td style="padding:0.5rem 0.75rem;">
-        <input class="betreff-input" type="text" value="${r.ref}" onchange="rowsPrets[${i}].ref=this.value; savePrets();" style="color:#6b6b7a; font-size:0.78rem;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:center;">
-        <input type="month" value="${r.start ? r.start.substring(0,7) : ''}" onchange="rowsPrets[${i}].start=this.value+'-01'; renderPrets(); savePrets();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:center;">
-        <input type="month" value="${r.end ? r.end.substring(0,7) : ''}" onchange="rowsPrets[${i}].end=this.value+'-01'; renderPrets(); savePrets();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:right; font-size:0.82rem; color:#60c8f0;">
-        ${restschuld > 0 ? new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(restschuld)+' €' : '–'}
-      </td>
-      <td style="padding:0.5rem 0.75rem;">
-        <div style="background:#2a2a32; border-radius:2px; height:5px; overflow:hidden;">
-          <div style="height:100%; width:${pct}%; background:${pctColor}; border-radius:2px; transition:width 0.3s;"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#6b6b7a; margin-top:0.2rem;">
-          <span>${pct}%</span><span>${monthsLeft} Mo.</span>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-  document.getElementById('prets-total').textContent = new Intl.NumberFormat('de-LU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(total) + ' €';
-  renderPretsCards();
-}
-
-function renderPretsCards() {
-  const el = document.getElementById('prets-cards');
-  if (!el) return;
-  const total = rowsPrets.reduce((s,r) => s + (parseFloat(r.rate)||0), 0);
-  const totalSchuld = rowsPrets.filter(r=>r.total>0).reduce((s,r) => s + Math.round(getMonthsLeft(r.end)*r.rate), 0);
-  const longest = rowsPrets.reduce((a,b) => getMonthsLeft(b.end) > getMonthsLeft(a.end) ? b : a, rowsPrets[0]);
-  el.innerHTML = `
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Total / Monat</div>
-      <div style="font-size:1.5rem; font-weight:700; color:#f06060;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(total)} €</div>
-      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.2rem;">${rowsPrets.length} Positionen</div>
-    </div>
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Gesamte Restschuld</div>
-      <div style="font-size:1.5rem; font-weight:700; color:#60c8f0;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(totalSchuld)} €</div>
-      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.2rem;">Kredite mit Betrag</div>
-    </div>
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Längste Laufzeit</div>
-      <div style="font-size:1.5rem; font-weight:700; color:#c8f060;">${longest ? fmtDate(longest.end) : '–'}</div>
-      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.2rem;">${longest ? longest.name : ''}</div>
-    </div>`;
-}
-
-loadPrets();
-renderPrets();
-
-
-// ========== HISTORIQUE ==========
-const HISTO_CREDITS = [{'name': 'Tesla', 'start': '2026-03', 'end': '2031-02', 'rate': 857.93}, {'name': 'Photovoltaique', 'start': '2023-10', 'end': '2033-09', 'rate': 399.62}, {'name': 'BuyWay', 'start': '2026-02', 'end': '2026-11', 'rate': 140.0}, {'name': 'Duster', 'start': '2022-06', 'end': '2033-03', 'rate': 494.56}, {'name': 'Panamera', 'start': '2025-02', 'end': '2035-01', 'rate': 896.55}, {'name': 'Logement', 'start': '2020-08', 'end': '2041-08', 'rate': 1910.0}, {'name': 'Avance Impôts', 'start': '2025-06', 'end': '2027-12', 'rate': 1550.0}, {'name': 'Salaire Tina', 'start': '2020-01', 'end': '2030-12', 'rate': 616.19}, {'name': 'CCSS', 'start': '2023-01', 'end': '2028-12', 'rate': 246.24}, {'name': 'Bail L93', 'start': '2021-01', 'end': '2027-04', 'rate': 250.0}];
-let histoPaid = {}; // key: "creditName_YYYY-MM" -> true/false
-
-function loadHisto() {
-  try {
-    const s = sessionStorage.getItem('bcee_histo');
-    histoPaid = s ? JSON.parse(s) : {};
-  } catch(e) { histoPaid = {}; }
-}
-
-function saveHisto() {
-  try { sessionStorage.setItem('bcee_histo', JSON.stringify(histoPaid)); } catch(e) {}
-  scheduleSave();
-}
-
-function getHistoMonths() {
-  // Show from Jan 2025 to Dec 2027
-  const months = [];
-  for (let y = 2025; y <= 2027; y++) {
-    for (let m = 1; m <= 12; m++) {
-      months.push(`${y}-${String(m).padStart(2,'0')}`);
-    }
-  }
-  return months;
-}
-
-function isActive(credit, ym) {
-  return ym >= credit.start && ym <= credit.end;
-}
-
-function togglePaid(creditName, ym) {
-  const key = creditName + '_' + ym;
-  histoPaid[key] = !histoPaid[key];
-  saveHisto();
-  renderHistorique();
-}
-
-function renderHistorique() {
-  const months = getHistoMonths();
-  const tbody = document.getElementById('tbody-historique');
-  const headerRow = document.getElementById('histo-month-headers');
-  if (!tbody || !headerRow) return;
-
-  // Month headers
-  headerRow.innerHTML = '<th style="position:sticky; left:0; background:#1a1a1f; min-width:130px;"></th>' +
-    months.map(ym => {
-      const [y,m] = ym.split('-');
-      const isPast = ym < '2026-06';
-      const isCurrent = ym === '2026-05';
-      const label = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString('de-LU', {month:'short'});
-      return `<th style="padding:0.3rem 0.2rem; text-align:center; font-size:0.6rem; color:${isCurrent ? '#c8f060' : isPast ? '#6b6b7a' : '#3a3a44'}; font-weight:${isCurrent ? '700' : '400'}; min-width:38px; border-bottom:1px solid #2a2a32; border-left:1px solid rgba(42,42,50,0.3);">
-        <div>${label}</div><div style="color:#3a3a44; font-size:0.55rem;">${y.slice(2)}</div>
-      </th>`;
-    }).join('');
-
-  let totalPaid = 0, countPaid = 0, countOpen = 0;
-
-  tbody.innerHTML = HISTO_CREDITS.map(cr => {
-    const cells = months.map(ym => {
-      if (!isActive(cr, ym)) return `<td style="background:#0f0f11; border-left:1px solid rgba(42,42,50,0.2);"></td>`;
-      const key = cr.name + '_' + ym;
-      const paid = histoPaid[key] || false;
-      const isPastDue = ym < '2026-06'; // before June 2026
-      
-      if (paid) { totalPaid += cr.rate; countPaid++; }
-      else if (isPastDue) { countOpen++; }
-
-      const bg = paid ? 'rgba(96,240,160,0.15)' : isPastDue ? 'rgba(240,96,96,0.08)' : 'rgba(42,42,50,0.2)';
-      const color = paid ? '#60f0a0' : isPastDue ? '#f06060' : '#3a3a44';
-      const symbol = paid ? '✓' : isPastDue ? '!' : '·';
-
-      return `<td style="text-align:center; padding:0.2rem; border-left:1px solid rgba(42,42,50,0.2); background:${bg}; cursor:pointer;" 
-        onclick="togglePaid('${cr.name}','${ym}'); "
-        title="${cr.name} ${ym}: ${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(cr.rate)} €">
-        <span style="font-size:0.75rem; color:${color}; font-weight:${paid ? '700' : '400'};">${symbol}</span>
-      </td>`;
-    }).join('');
-
-    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.4);">
-      <td style="padding:0.4rem 0.75rem; font-size:0.8rem; font-weight:600; position:sticky; left:0; background:#17171a; z-index:1; border-right:1px solid #2a2a32;">
-        ${cr.name}
-        <div style="font-size:0.65rem; color:#6b6b7a; font-weight:400;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(cr.rate)} €/Mo</div>
-      </td>
-      ${cells}
-    </tr>`;
-  }).join('');
-
-  document.getElementById('histo-paid-count').textContent = countPaid + ' Raten';
-  document.getElementById('histo-open-count').textContent = countOpen + ' offen';
-  document.getElementById('histo-paid-sum').textContent = new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(totalPaid) + ' €';
-}
-
-// Historique renders after DOM ready (called in window.onload)
-
-
-// ========== DIVERS PAGE ==========
-function loadDivers() {
-  try {
-    const s = sessionStorage.getItem('bcee_divers');
-    rowsDivers = s ? JSON.parse(s) : DEFAULT_DIVERS.map(r=>({...r}));
-  } catch(e) { rowsDivers = DEFAULT_DIVERS.map(r=>({...r})); }
-}
-
-function saveDivers() {
-  try { sessionStorage.setItem('bcee_divers', JSON.stringify(rowsDivers)); } catch(e) {}
-  scheduleSave();
-}
-
-function renderDivers() {
-  const tbody = document.getElementById('tbody-divers');
-  if (!tbody) return;
-  let total = 0;
-  tbody.innerHTML = rowsDivers.map((r,i) => {
-    total += parseFloat(r.rate) || 0;
-    const monthsLeft = getMonthsLeft(r.end);
-    const restschuld = r.total > 0 ? Math.round(monthsLeft * r.rate) : 0;
-    const pct = getPct(r.start, r.end);
-    const pctColor = pct > 80 ? '#60f0a0' : pct > 50 ? '#60c8f0' : '#c8f060';
-    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.5);">
-      <td style="padding:0.5rem 0.75rem;">
-        <input class="betreff-input" type="text" value="${r.name}" onchange="rowsDivers[${i}].name=this.value; renderDivers(); saveDivers();" style="font-weight:600;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:right;">
-        <input class="amt-input" type="number" step="0.01" value="${r.rate}" onchange="rowsDivers[${i}].rate=parseFloat(this.value)||0; renderDivers(); saveDivers();">
-      </td>
-      <td style="padding:0.5rem 0.75rem;">
-        <input class="betreff-input" type="text" value="${r.ref}" onchange="rowsDivers[${i}].ref=this.value; saveDivers();" style="color:#6b6b7a; font-size:0.78rem;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:center;">
-        <input type="month" value="${r.start ? r.start.substring(0,7) : ''}" onchange="rowsDivers[${i}].start=this.value+'-01'; renderDivers(); saveDivers();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:center;">
-        <input type="month" value="${r.end ? r.end.substring(0,7) : ''}" onchange="rowsDivers[${i}].end=this.value+'-01'; renderDivers(); saveDivers();" style="background:transparent; border:none; color:#6b6b7a; font-size:0.75rem; font-family:inherit; text-align:center; cursor:pointer;">
-      </td>
-      <td style="padding:0.5rem 0.75rem; text-align:right; font-size:0.82rem; color:#60c8f0;">
-        ${restschuld > 0 ? new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(restschuld)+' €' : '–'}
-      </td>
-      <td style="padding:0.5rem 0.75rem;">
-        <div style="background:#2a2a32; border-radius:2px; height:5px; overflow:hidden;">
-          <div style="height:100%; width:${pct}%; background:${pctColor}; border-radius:2px;"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:#6b6b7a; margin-top:0.2rem;">
-          <span>${pct}%</span><span>${monthsLeft} Mo.</span>
-        </div>
-      </td>
-    </tr>`;
-  }).join('');
-  document.getElementById('divers-total').textContent = new Intl.NumberFormat('de-LU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(total) + ' €';
-
-  const el = document.getElementById('divers-cards');
-  if (!el) return;
-  const totalSchuld = rowsDivers.filter(r=>r.total>0).reduce((s,r) => s + Math.round(getMonthsLeft(r.end)*r.rate), 0);
-  const longest = rowsDivers.reduce((a,b) => getMonthsLeft(b.end) > getMonthsLeft(a.end) ? b : a, rowsDivers[0]);
-  el.innerHTML = `
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Total / Monat</div>
-      <div style="font-size:1.5rem; font-weight:700; color:#f06060;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(total)} €</div>
-    </div>
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Restschuld</div>
-      <div style="font-size:1.5rem; font-weight:700; color:#60c8f0;">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(totalSchuld)} €</div>
-    </div>
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:1rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.3rem;">Längste Laufzeit</div>
-      <div style="font-size:1.5rem; font-weight:700; color:#c8f060;">${longest ? fmtDate(longest.end) : '–'}</div>
-      <div style="font-size:0.7rem; color:#3a3a44; margin-top:0.15rem;">${longest ? longest.name : ''}</div>
-    </div>`;
-}
-
-loadDivers();
-renderDivers();
-
-</script>
-
-<!-- ========== PAGE: HISTORIQUE ========== -->
-<div id="page-historique" style="display:none;">
-<div style="max-width:1300px; margin:0 auto; padding:1.5rem 2rem;">
-  <div style="font-size:0.7rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1.5rem;">Historique des paiements — cliquez pour marquer comme payé</div>
-  
-  <div style="display:flex; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap;">
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:0.75rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em;">Bezahlt</div>
-      <div style="font-size:1.2rem; font-weight:700; color:#60f0a0;" id="histo-paid-count">–</div>
-    </div>
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:0.75rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em;">Offen</div>
-      <div style="font-size:1.2rem; font-weight:700; color:#f06060;" id="histo-open-count">–</div>
-    </div>
-    <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; padding:0.75rem 1.25rem;">
-      <div style="font-size:0.65rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em;">Bezahlt (€)</div>
-      <div style="font-size:1.2rem; font-weight:700; color:#60c8f0;" id="histo-paid-sum">–</div>
-    </div>
+<!-- HISTORIQUE PAGE -->
+<div id="page-historique" class="page">
+<div class="histo-page">
+  <div style="font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:1rem;">Historique des paiements — cliquez pour marquer comme payé</div>
+  <div class="year-nav" id="histo-year-nav"></div>
+  <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+    <div class="stat-card"><div class="stat-label">Bezahlt</div><div class="stat-value pos" id="histo-paid-count">–</div></div>
+    <div class="stat-card"><div class="stat-label">Offen</div><div class="stat-value neg" id="histo-open-count">–</div></div>
+    <div class="stat-card"><div class="stat-label">Bezahlt (€)</div><div class="stat-value" style="color:#60c8f0" id="histo-paid-sum">–</div></div>
   </div>
-
-  <div style="overflow-x:auto;">
-    <table style="width:100%; border-collapse:collapse; min-width:900px;">
+  <div class="histo-table-wrap">
+    <table class="histo-table">
       <thead>
         <tr style="background:#1e1e23;">
-          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; position:sticky; left:0; background:#1e1e23; min-width:130px;">Kredit / Monat</th>
+          <th class="histo-sticky" style="background:#1e1e23;">Kredit / Monat</th>
           <th id="histo-header-row" colspan="100" style="border-bottom:1px solid #2a2a32;"></th>
         </tr>
         <tr id="histo-month-headers" style="background:#1a1a1f;"></tr>
@@ -962,37 +262,380 @@ renderDivers();
 </div>
 </div>
 
+<script>
+// ===== SUPABASE =====
+const SUPA_URL = 'https://hthtvoswugkcftrkpjvs.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh0aHR2b3N3dWdrY2Z0cmtwanZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyMTQ3NzYsImV4cCI6MjA5NTc5MDc3Nn0.XLxTwgGWLNZYAlpuTcirdxDjcPaeYtuhDtMx1oh2Muc';
+const {createClient} = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+let isDirty = false;
 
-<!-- ========== PAGE: DIVERS ========== -->
-<div id="page-divers" style="display:none;">
-<div style="max-width:1100px; margin:0 auto; padding:1.5rem 2rem;">
-  <div style="font-size:0.7rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:1.5rem;">Divers — Charges mensuelles</div>
-  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem;" id="divers-cards"></div>
-  <div style="background:#17171a; border:1px solid #2a2a32; border-radius:4px; overflow:hidden; margin-bottom:1.5rem;">
-    <table style="width:100%; border-collapse:collapse;">
-      <thead style="background:#1e1e23;">
-        <tr>
-          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:22%;">Bezeichnung</th>
-          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Rate/Mo</th>
-          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:18%;">Betreff Überweisung</th>
-          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Start</th>
-          <th style="padding:0.6rem 0.75rem; text-align:center; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:10%;">Ende</th>
-          <th style="padding:0.6rem 0.75rem; text-align:right; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:12%;">Restschuld</th>
-          <th style="padding:0.6rem 0.75rem; text-align:left; font-size:0.6rem; color:#6b6b7a; text-transform:uppercase; letter-spacing:0.1em; border-bottom:1px solid #2a2a32; width:16%;">Fortschritt</th>
-        </tr>
-      </thead>
-      <tbody id="tbody-divers"></tbody>
-      <tfoot>
-        <tr style="background:#1e1e23; border-top:2px solid #2a2a32;">
-          <td style="padding:0.7rem 0.75rem; font-size:0.7rem; color:#6b6b7a; text-transform:uppercase;">Total / Monat</td>
-          <td style="padding:0.7rem 0.75rem; text-align:right; font-size:1rem; font-weight:700; color:#f06060;" id="divers-total">–</td>
-          <td colspan="5"></td>
-        </tr>
-      </tfoot>
-    </table>
-  </div>
-</div>
-</div>
+async function dbSet(key, val) {
+  try { await sb.from('calcul_data').upsert({key, value:val, updated_at:new Date().toISOString()}); } catch(e){}
+}
+async function dbGet(key) {
+  try { const {data} = await sb.from('calcul_data').select('value').eq('key',key).single(); return data?.value ?? null; } catch(e){ return null; }
+}
 
+function markDirty() {
+  isDirty = true;
+  const btn = document.getElementById('save-btn');
+  const hint = document.getElementById('save-hint');
+  btn.style.background='rgba(240,96,96,0.15)';btn.style.borderColor='rgba(240,96,96,0.5)';btn.style.color='#f06060';btn.textContent='💾 Nicht gespeichert';
+  hint.textContent='Ungespeicherte Änderungen';hint.style.color='#f06060';
+}
+
+async function manualSave() {
+  const btn=document.getElementById('save-btn'), hint=document.getElementById('save-hint');
+  btn.textContent='⏳ Speichere...';btn.style.color='#6b6b7a';
+  await Promise.all([
+    dbSet('bcee_commun_rows', rowsComm),
+    dbSet('bcee_priv_rows', rowsPriv),
+    dbSet('bcee_commun_solde', document.getElementById('solde-comm').value),
+    dbSet('bcee_priv_solde', document.getElementById('solde-priv').value),
+    dbSet('bcee_vir_rows', rowsVir),
+    dbSet('bcee_prets_rows', rowsPrets),
+    dbSet('bcee_divers_rows', rowsDivers),
+    dbSet('bcee_histo', histoPaid),
+  ]);
+  isDirty=false;
+  btn.style.background='rgba(200,240,96,0.1)';btn.style.borderColor='rgba(200,240,96,0.3)';btn.style.color='#c8f060';btn.textContent='✓ Gespeichert';
+  hint.textContent='Gespeichert';hint.style.color='#60f0a0';
+  setTimeout(()=>{btn.textContent='💾 Speichern';hint.textContent='Alle Änderungen manuell speichern';hint.style.color='#3a3a44';},2000);
+}
+
+window.addEventListener('beforeunload', e=>{ if(isDirty){e.preventDefault();e.returnValue='';}});
+
+// ===== NAV =====
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.getElementById('nav-'+p).classList.add('active');
+  if(p==='prets'){renderPrets();renderDivers();}
+  if(p==='historique'){renderHistorique();}
+}
+
+// ===== FORMAT =====
+const fmt = n => n===''||n===null||n===undefined||isNaN(n) ? '' : new Intl.NumberFormat('de-LU',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+const fmtE = n => fmt(n) + (fmt(n)?' €':'');
+
+// ===== CALCUL DATA =====
+const DEFAULT_COMM = [
+  {betreff:'BCEE Tesla',geplant:-857.93,bezahlt:'',datum:'01/mm/aa'},
+  {betreff:'DKV',geplant:-224.64,bezahlt:'',datum:'02/mm/aa'},
+  {betreff:'CMCM',geplant:-58.25,bezahlt:'',datum:'02/mm/aa'},
+  {betreff:'AXA Maison',geplant:-162.84,bezahlt:'',datum:'02/mm/aa'},
+  {betreff:'AXA Porsche',geplant:-201.49,bezahlt:'',datum:'02/mm/aa'},
+  {betreff:'AXA Dacia',geplant:-108.46,bezahlt:'',datum:'02/mm/aa'},
+  {betreff:'Enovos',geplant:-498.95,bezahlt:'',datum:'05/06/aa'},
+  {betreff:'Record Credit (Fotovolt)',geplant:-399.62,bezahlt:'',datum:'10/mm/aa'},
+  {betreff:'Handicap Int',geplant:-20.00,bezahlt:'',datum:'20/mm/aa'},
+  {betreff:'Panamera',geplant:-896.55,bezahlt:'',datum:'21/mm/aa'},
+  {betreff:'Tango',geplant:-220.00,bezahlt:'',datum:'23/mm/aa'},
+  {betreff:'Foyer Pension Jim',geplant:-150.00,bezahlt:'',datum:'28/mm/aa'},
+  {betreff:'Foyer Pension Jak',geplant:-150.00,bezahlt:'',datum:'28/mm/aa'},
+  {betreff:'Axa Tesla',geplant:-143.80,bezahlt:'',datum:'29/mm/aa'},
+  {betreff:'---'},
+  {betreff:'Tft CRRA',geplant:-1600.00,bezahlt:'',datum:''},
+  {betreff:'ING Maison',geplant:-1910.00,bezahlt:'',datum:''},
+  {betreff:'Impôts',geplant:-2500.00,bezahlt:'',datum:''},
+  {betreff:'Impôts nobezuelen',geplant:'',bezahlt:'',datum:''},
+  {betreff:'CCSS',geplant:-246.24,bezahlt:'',datum:''},
+  {betreff:'Impôts Duster',geplant:-144.00,bezahlt:'',datum:''},
+  {betreff:'Enovos (2)',geplant:-498.95,bezahlt:'',datum:''},
+  {betreff:'Enovos (3)',geplant:-73.60,bezahlt:'',datum:''},
+  {betreff:'Buy Way',geplant:-140.00,bezahlt:'',datum:''},
+  {betreff:'Eimab',geplant:'',bezahlt:'',datum:''},
+  {betreff:'Enodrive',geplant:'',bezahlt:'',datum:''},
+  {betreff:'Reserve',geplant:'',bezahlt:'',datum:''},
+  {betreff:'Schumacher',geplant:-536.98,bezahlt:'',datum:''},
+];
+const DEFAULT_PRIV = [
+  {betreff:'BCEE Visa',geplant:-998.00,bezahlt:'',datum:'07/mm/aa'},
+  {betreff:'Duster',geplant:-494.56,bezahlt:'',datum:'30/mm/aa'},
+  {betreff:'Chasse',geplant:-250.00,bezahlt:'',datum:''},
+  {betreff:'Vacance',geplant:'',bezahlt:'',datum:''},
+];
+const DEFAULT_VIR = [
+  {bez:'TFT ING => CCRA',betrag:150,rem:'LU28 0090 0000 0678 1447'},
+  {bez:'TFT Impôts',betrag:1500,rem:''},
+  {bez:'Salaire Tina',betrag:616.19,rem:''},
+  {bez:'Axa Duster',betrag:108.46,rem:'Contrat 25/0260573'},
+  {bez:'Axa Tesla',betrag:144.43,rem:''},
+  {bez:'Axa Panamera',betrag:193.95,rem:'Contrat 25/7195825'},
+  {bez:'Axa Maison',betrag:111.95,rem:'Contrat 10/5749920'},
+  {bez:'Lotto',betrag:50,rem:''},
+  {bez:'Duster',betrag:494.56,rem:''},
+  {bez:'Panamera',betrag:896.55,rem:'le 21 de chaque mois'},
+  {bez:'Tesla',betrag:857.93,rem:''},
+  {bez:'Avance impôts',betrag:4600,rem:'LU13 1111 0069 6679 0000'},
+  {bez:'CMCM mensuelle',betrag:57.04,rem:''},
+  {bez:'Avance chasse L93 MM/2021',betrag:250,rem:'LU72 0099 7800 0100 0033'},
+  {bez:'Société Tir Echternach',betrag:100,rem:'LU29 0021 1185 1570 0000'},
+  {bez:'Dropbox mars',betrag:204,rem:''},
+  {bez:'Microsoft Family',betrag:99,rem:''},
+  {bez:'ACL fin novembre',betrag:119,rem:''},
+  {bez:'ANNUEL Kannerhaus cotisation',betrag:20,rem:'a faire en janvier'},
+  {bez:'ANNUEL SIW cotisation',betrag:15,rem:'a faire en janvier'},
+  {bez:'Buyway',betrag:140,rem:''},
+];
+
+let rowsComm=[], rowsPriv=[], rowsVir=[];
+
+function renderRows(rows, tbodyId, prefix) {
+  const tbody = document.getElementById(tbodyId);
+  if(!tbody) return;
+  tbody.innerHTML = rows.map((r,i)=>{
+    if(r.betreff==='---') return `<tr class="sep-row"><td colspan="6"></td></tr>`;
+    const g = (r.geplant!==''&&r.geplant!==null)?r.geplant:'';
+    const b = (r.bezahlt!==''&&r.bezahlt!==null)?r.bezahlt:'';
+    return `<tr>
+      <td><input class="betreff-input" type="text" value="${r.betreff}" onchange="updRow('${prefix}',${i},'betreff',this.value)"></td>
+      <td><input class="amt-input" type="number" step="0.01" value="${g}" placeholder="–" onchange="updRow('${prefix}',${i},'geplant',this.value)"></td>
+      <td style="text-align:center">
+        ${g!==''?`<button class="move-btn" onclick="moveR('${prefix}',${i})">→</button>`:''}
+        ${b!==''?`<button class="move-btn" onclick="moveL('${prefix}',${i})">←</button>`:''}
+      </td>
+      <td><input class="amt-input" type="number" step="0.01" value="${b}" placeholder="–" onchange="updRow('${prefix}',${i},'bezahlt',this.value)"></td>
+      <td><input class="date-input" type="text" value="${r.datum||''}" placeholder="tt/mm/aa" onchange="updRow('${prefix}',${i},'datum',this.value)"></td>
+      <td><button class="del-btn" onclick="delRow('${prefix}',${i})">✕</button></td>
+    </tr>`;
+  }).join('');
+  const addTr=document.createElement('tr');
+  addTr.innerHTML=`<td colspan="6" style="padding:0.3rem 0.5rem;"><button class="add-row-btn" onclick="addRow('${prefix}')">+ Zeile hinzufügen</button></td>`;
+  tbody.appendChild(addTr);
+}
+
+function getRows(p){return p==='commun'?rowsComm:rowsPriv;}
+function updRow(p,i,col,val){
+  const rows=getRows(p);
+  rows[i][col]=(col==='geplant'||col==='bezahlt')?(val===''?'':parseFloat(val)):val;
+  if(p==='commun')calcComm();else calcPriv();
+  markDirty();
+}
+function moveR(p,i){const rows=getRows(p);if(rows[i].geplant!==''){rows[i].bezahlt=rows[i].geplant;rows[i].geplant='';}renderRows(p==='commun'?rowsComm:rowsPriv,p==='commun'?'tbody-commun':'tbody-priv',p);if(p==='commun')calcComm();else calcPriv();markDirty();}
+function moveL(p,i){const rows=getRows(p);if(rows[i].bezahlt!==''){rows[i].geplant=rows[i].bezahlt;rows[i].bezahlt='';}renderRows(p==='commun'?rowsComm:rowsPriv,p==='commun'?'tbody-commun':'tbody-priv',p);if(p==='commun')calcComm();else calcPriv();markDirty();}
+function delRow(p,i){getRows(p).splice(i,1);renderRows(p==='commun'?rowsComm:rowsPriv,p==='commun'?'tbody-commun':'tbody-priv',p);if(p==='commun')calcComm();else calcPriv();markDirty();}
+function addRow(p){getRows(p).push({betreff:'',geplant:'',bezahlt:'',datum:''});renderRows(p==='commun'?rowsComm:rowsPriv,p==='commun'?'tbody-commun':'tbody-priv',p);markDirty();}
+
+function calcComm(){
+  const s=parseFloat(document.getElementById('solde-comm').value)||0;
+  let t=0; rowsComm.forEach(r=>{if(r.betreff!=='---'&&r.geplant!==''&&!isNaN(r.geplant))t+=parseFloat(r.geplant);});
+  const fin=s+t, el=document.getElementById('solde-fin-comm');
+  el.textContent=fmtE(fin); el.className='solde-fin-value '+(fin>=0?'pos':'neg');
+}
+function calcPriv(){
+  const s=parseFloat(document.getElementById('solde-priv').value)||0;
+  let t=0; rowsPriv.forEach(r=>{if(r.betreff!=='---'&&r.geplant!==''&&!isNaN(r.geplant))t+=parseFloat(r.geplant);});
+  const fin=s+t, el=document.getElementById('solde-fin-priv');
+  el.textContent=fmtE(fin); el.className='solde-fin-value '+(fin>=0?'pos':'neg');
+}
+
+// Zusatz
+const DEFAULT_EXTRA = Array.from({length:10},()=>({betrag:''}));
+let rowsExtra=[];
+function clearExtra(){rowsExtra=DEFAULT_EXTRA.map(r=>({...r}));renderExtra();}
+function renderExtra(){
+  const tbody=document.getElementById('tbody-extra');
+  if(!tbody)return;
+  tbody.innerHTML=rowsExtra.map((r,i)=>`<tr><td><input class="amt-input" type="number" step="0.01" value="${r.betrag!==''?r.betrag:''}" placeholder="0.00" id="extra-${i}" onchange="rowsExtra[${i}].betrag=this.value===''?'':parseFloat(this.value);calcExtra();" onkeydown="if(event.key==='Enter'){event.preventDefault();var n=document.getElementById('extra-${i+1}');if(n)n.focus();}"></td></tr>`).join('');
+  calcExtra();
+}
+function calcExtra(){
+  let s=0; rowsExtra.forEach(r=>{if(r.betrag!==''&&!isNaN(r.betrag))s+=parseFloat(r.betrag);});
+  const el=document.getElementById('extra-summe');
+  el.textContent=fmtE(s)||'0,00 €'; el.style.color=s>=0?'#60f0a0':'#f06060';
+}
+
+// Virements
+function renderVir(){
+  const tbody=document.getElementById('tbody-vir');
+  if(!tbody)return;
+  tbody.innerHTML=rowsVir.map((r,i)=>`<tr>
+    <td><input class="betreff-input" type="text" value="${r.bez}" onchange="rowsVir[${i}].bez=this.value;markDirty();"></td>
+    <td><input class="amt-input" type="number" step="0.01" value="${r.betrag}" onchange="rowsVir[${i}].betrag=parseFloat(this.value)||0;markDirty();"></td>
+    <td><input class="betreff-input" type="text" value="${r.rem}" style="color:#6b6b7a" onchange="rowsVir[${i}].rem=this.value;markDirty();"></td>
+  </tr>`).join('');
+}
+
+// ===== PRETS DATA =====
+const DEFAULT_PRETS=[
+  {name:'Tesla',rate:857.93,ref:'Tesla',start:'2026-03-01',end:'2031-02-01',total:51475.80},
+  {name:'Photovoltaique',rate:399.62,ref:'Record Credit',start:'2023-10-01',end:'2033-09-01',total:47954.40},
+  {name:'Duster',rate:494.56,ref:'Duster',start:'2022-06-01',end:'2033-03-01',total:41543.04},
+  {name:'Panamera',rate:896.55,ref:'Panamera',start:'2025-02-01',end:'2035-01-01',total:107586.00},
+  {name:'Logement',rate:1910.00,ref:'ING Maison',start:'2020-08-01',end:'2041-08-01',total:482070.00},
+];
+const DEFAULT_DIVERS=[
+  {name:'BuyWay',rate:140.00,ref:'BuyWay',start:'2026-02-01',end:'2026-11-01',total:1500.00},
+  {name:'Avance Impôts',rate:1550.00,ref:'Avance Impôts',start:'2025-06-01',end:'2027-12-01',total:0},
+  {name:'Salaire Tina',rate:616.19,ref:'Salaire Tina',start:'2020-01-01',end:'2030-12-01',total:0},
+  {name:'CCSS',rate:246.24,ref:'CCSS',start:'2023-01-01',end:'2028-12-01',total:0},
+  {name:'Bail L93 Merkholtz',rate:250.00,ref:'Bail L93',start:'2021-01-01',end:'2027-04-01',total:0},
+];
+let rowsPrets=[], rowsDivers=[];
+
+const REF_DATE = new Date(2026,5,1); // June 2026
+function getMonthsLeft(end){if(!end)return 0;const e=new Date(end);return Math.max(0,(e.getFullYear()-REF_DATE.getFullYear())*12+(e.getMonth()-REF_DATE.getMonth()));}
+function getPct(start,end){if(!start||!end)return 0;const s=new Date(start).getTime(),e=new Date(end).getTime(),r=REF_DATE.getTime();return Math.min(100,Math.max(0,Math.round((r-s)/(e-s)*100)));}
+function fmtDate(d){if(!d)return'–';return new Date(d).toLocaleDateString('de-LU',{month:'short',year:'2-digit'});}
+
+function renderPretsTable(rows, tbodyId, showRestschuld) {
+  const tbody=document.getElementById(tbodyId);
+  if(!tbody)return 0;
+  let total=0;
+  tbody.innerHTML=rows.map((r,i)=>{
+    total+=parseFloat(r.rate)||0;
+    const ml=getMonthsLeft(r.end), rs=r.total>0?Math.round(ml*r.rate):0, pct=getPct(r.start,r.end);
+    const pctColor=pct>80?'#60f0a0':pct>50?'#60c8f0':'#c8f060';
+    const restCell=showRestschuld?`<td style="padding:0.5rem 0.75rem;text-align:right;font-size:0.82rem;color:#60c8f0">${rs>0?new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(rs)+' €':'–'}</td>`:'';
+    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.5)">
+      <td style="padding:0.5rem 0.75rem"><input class="betreff-input" type="text" value="${r.name}" style="font-weight:600" onchange="updPrets('${tbodyId}',${i},'name',this.value)"></td>
+      <td style="padding:0.5rem 0.75rem;text-align:right"><input class="amt-input" type="number" step="0.01" value="${r.rate}" onchange="updPrets('${tbodyId}',${i},'rate',this.value)"></td>
+      <td style="padding:0.5rem 0.75rem"><input class="betreff-input" type="text" value="${r.ref}" style="color:#6b6b7a;font-size:0.78rem" onchange="updPrets('${tbodyId}',${i},'ref',this.value)"></td>
+      <td style="padding:0.5rem 0.75rem;text-align:center"><input type="month" value="${r.start?r.start.substring(0,7):''}" onchange="updPrets('${tbodyId}',${i},'start',this.value+'-01')" style="background:transparent;border:none;color:#6b6b7a;font-size:0.75rem;font-family:inherit;cursor:pointer"></td>
+      <td style="padding:0.5rem 0.75rem;text-align:center"><input type="month" value="${r.end?r.end.substring(0,7):''}" onchange="updPrets('${tbodyId}',${i},'end',this.value+'-01')" style="background:transparent;border:none;color:#6b6b7a;font-size:0.75rem;font-family:inherit;cursor:pointer"></td>
+      ${restCell}
+      <td style="padding:0.5rem 0.75rem">
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${pctColor}"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:0.65rem;color:#6b6b7a;margin-top:0.2rem"><span>${pct}%</span><span>${ml} Mo.</span></div>
+      </td>
+    </tr>`;
+  }).join('');
+  return total;
+}
+
+function updPrets(tbodyId, i, col, val) {
+  const rows = tbodyId==='tbody-prets'?rowsPrets:rowsDivers;
+  rows[i][col] = (col==='rate'||col==='total')?(parseFloat(val)||0):val;
+  if(tbodyId==='tbody-prets')renderPrets();else renderDivers();
+  markDirty();
+}
+
+function renderPrets(){
+  const total=renderPretsTable(rowsPrets,'tbody-prets',true);
+  document.getElementById('prets-total').textContent=fmtE(total);
+  const ts=rowsPrets.filter(r=>r.total>0).reduce((s,r)=>s+Math.round(getMonthsLeft(r.end)*r.rate),0);
+  const lng=rowsPrets.reduce((a,b)=>getMonthsLeft(b.end)>getMonthsLeft(a.end)?b:a,rowsPrets[0]);
+  document.getElementById('prets-cards').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total / Monat</div><div class="stat-value neg">${fmtE(total)}</div><div style="font-size:0.7rem;color:#3a3a44;margin-top:0.2rem">${rowsPrets.length} Positionen</div></div>
+    <div class="stat-card"><div class="stat-label">Gesamte Restschuld</div><div class="stat-value" style="color:#60c8f0">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:0}).format(ts)} €</div></div>
+    <div class="stat-card"><div class="stat-label">Längste Laufzeit</div><div class="stat-value" style="color:#c8f060">${lng?fmtDate(lng.end):'–'}</div><div style="font-size:0.7rem;color:#3a3a44;margin-top:0.15rem">${lng?lng.name:''}</div></div>`;
+  renderDivers();
+}
+
+function renderDivers(){
+  const total=renderPretsTable(rowsDivers,'tbody-divers',false);
+  document.getElementById('divers-total').textContent=fmtE(total);
+  document.getElementById('divers-cards').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total / Monat</div><div class="stat-value neg">${fmtE(total)}</div><div style="font-size:0.7rem;color:#3a3a44;margin-top:0.2rem">${rowsDivers.length} Positionen</div></div>`;
+}
+
+// ===== HISTORIQUE =====
+const HISTO_CREDITS=[
+  {name:'Tesla',start:'2026-01',end:'2031-02',rate:857.93},
+  {name:'Photovoltaique',start:'2026-01',end:'2033-09',rate:399.62},
+  {name:'BuyWay',start:'2026-02',end:'2026-11',rate:140.00},
+  {name:'Duster',start:'2026-01',end:'2033-03',rate:494.56},
+  {name:'Panamera',start:'2026-01',end:'2035-01',rate:896.55},
+  {name:'Logement',start:'2026-01',end:'2041-08',rate:1910.00},
+  {name:'Avance Impôts',start:'2026-01',end:'2027-12',rate:1550.00},
+  {name:'Salaire Tina',start:'2026-01',end:'2030-12',rate:616.19},
+  {name:'CCSS',start:'2026-01',end:'2028-12',rate:246.24},
+  {name:'Bail L93',start:'2026-01',end:'2027-04',rate:250.00},
+];
+let histoPaid={}, histoYear=2026;
+
+function togglePaid(name,ym){const k=name+'_'+ym;histoPaid[k]=!histoPaid[k];markDirty();renderHistorique();}
+
+function renderHistorique(){
+  const ynav=document.getElementById('histo-year-nav');
+  if(!ynav)return;
+  ynav.innerHTML='';
+  for(let y=2026;y<=2041;y++){
+    const b=document.createElement('button');
+    b.className='year-btn'+(y===histoYear?' active':'');
+    b.textContent=y;
+    b.onclick=(()=>{const yr=y;return()=>{histoYear=yr;renderHistorique();};})();
+    ynav.appendChild(b);
+  }
+  const months=[], mNames=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  for(let m=1;m<=12;m++) months.push(`${histoYear}-${String(m).padStart(2,'0')}`);
+
+  const headerRow=document.getElementById('histo-month-headers');
+  headerRow.innerHTML='<th class="histo-sticky" style="background:#1a1a1f"></th>'+
+    months.map((ym,idx)=>{
+      const isCur=ym==='2026-05', isPast=ym<'2026-06';
+      return `<th style="padding:0.4rem 0.3rem;text-align:center;font-size:0.65rem;color:${isCur?'#c8f060':isPast?'#6b6b7a':'#e8e8ec'};font-weight:${isCur?700:400};min-width:40px;border-bottom:1px solid #2a2a32;border-left:1px solid rgba(42,42,50,0.3)">${mNames[idx]}</th>`;
+    }).join('');
+
+  let totalPaid=0, countPaid=0, countOpen=0;
+  const tbody=document.getElementById('tbody-historique');
+
+  tbody.innerHTML=HISTO_CREDITS.map(cr=>{
+    const yearStart=`${histoYear}-01`, yearEnd=`${histoYear}-12`;
+    if(cr.end<yearStart||cr.start>yearEnd) return '';
+    const cells=months.map(ym=>{
+      if(ym<cr.start||ym>cr.end) return `<td class="histo-cell inactive"></td>`;
+      const k=cr.name+'_'+ym, paid=histoPaid[k]||false, isPast=ym<'2026-06';
+      if(paid){totalPaid+=cr.rate;countPaid++;}
+      else if(isPast) countOpen++;
+      const cls='histo-cell'+(paid?' paid':isPast?' overdue':'');
+      const sym=paid?'✓':isPast?'!':'·';
+      const col=paid?'#60f0a0':isPast?'#f06060':'#3a3a44';
+      return `<td class="${cls}" onclick="togglePaid('${cr.name}','${ym}')" title="${cr.name} ${ym}: ${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(cr.rate)} €"><span style="font-size:0.8rem;color:${col};font-weight:${paid?700:400}">${sym}</span></td>`;
+    }).join('');
+    return `<tr style="border-bottom:1px solid rgba(42,42,50,0.4)">
+      <td class="histo-sticky"><div style="font-size:0.82rem;font-weight:600">${cr.name}</div><div style="font-size:0.65rem;color:#6b6b7a">${new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(cr.rate)} €/Mo</div></td>
+      ${cells}
+    </tr>`;
+  }).filter(r=>r!=='').join('');
+
+  document.getElementById('histo-paid-count').textContent=countPaid+' Raten';
+  document.getElementById('histo-open-count').textContent=countOpen+' offen';
+  document.getElementById('histo-paid-sum').textContent=new Intl.NumberFormat('de-LU',{minimumFractionDigits:2}).format(totalPaid)+' €';
+}
+
+// ===== LOAD FROM SUPABASE =====
+async function loadAll(){
+  const [cr,pr,cs,ps,vr,ptr,dr,hr] = await Promise.all([
+    dbGet('bcee_commun_rows'), dbGet('bcee_priv_rows'),
+    dbGet('bcee_commun_solde'), dbGet('bcee_priv_solde'),
+    dbGet('bcee_vir_rows'), dbGet('bcee_prets_rows'),
+    dbGet('bcee_divers_rows'), dbGet('bcee_histo'),
+  ]);
+  if(cr) rowsComm=cr; if(pr) rowsPriv=pr;
+  if(cs) document.getElementById('solde-comm').value=cs;
+  if(ps) document.getElementById('solde-priv').value=ps;
+  if(vr) rowsVir=vr; if(ptr) rowsPrets=ptr;
+  if(dr) rowsDivers=dr; if(hr) histoPaid=hr;
+
+  renderRows(rowsComm,'tbody-commun','commun');
+  renderRows(rowsPriv,'tbody-priv','priv');
+  renderVir(); renderExtra();
+  calcComm(); calcPriv();
+  renderHistorique();
+}
+
+// ===== INIT =====
+rowsComm=DEFAULT_COMM.map(r=>({...r}));
+rowsPriv=DEFAULT_PRIV.map(r=>({...r}));
+rowsVir=DEFAULT_VIR.map(r=>({...r}));
+rowsPrets=DEFAULT_PRETS.map(r=>({...r}));
+rowsDivers=DEFAULT_DIVERS.map(r=>({...r}));
+rowsExtra=Array.from({length:10},()=>({betrag:''}));
+histoPaid={};
+
+renderRows(rowsComm,'tbody-commun','commun');
+renderRows(rowsPriv,'tbody-priv','priv');
+renderVir(); renderExtra();
+calcComm(); calcPriv();
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  renderHistorique();
+  loadAll();
+});
+</script>
 </body>
 </html>
