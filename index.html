@@ -242,11 +242,9 @@ tr:hover td{background:rgba(255,255,255,0.02)}
 <div class="histo-page">
   <div style="font-size:0.7rem;color:#6b6b7a;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:1rem;">Historique des paiements — cliquez pour marquer comme payé</div>
   <div class="year-nav" id="histo-year-nav"></div>
-  <div style="display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;">
-    <div class="stat-card"><div class="stat-label">Bezahlt</div><div class="stat-value pos" id="histo-paid-count">–</div></div>
-    <div class="stat-card"><div class="stat-label">Offen</div><div class="stat-value neg" id="histo-open-count">–</div></div>
-    <div class="stat-card"><div class="stat-label">Bezahlt (€)</div><div class="stat-value" style="color:#60c8f0" id="histo-paid-sum">–</div></div>
-  </div>
+  <span id="histo-paid-count" style="display:none"></span>
+  <span id="histo-open-count" style="display:none"></span>
+  <span id="histo-paid-sum" style="display:none"></span>
   <div class="histo-table-wrap">
     <table class="histo-table">
       <thead>
